@@ -69,18 +69,20 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={Styles.container}>
       <Header navigation={navigation} />
+      <View style={{ position: "static", width: "auto", height: "100%" }}>
+        {visibleScreen === "Home" ? (
+          <HomePage />
+        ) : visibleScreen === "TrackProgress" ? (
+          <TrackProgress />
+        ) : visibleScreen === "DailyChallenge" ? (
+          <DailyChallenge />
+        ) : visibleScreen === "Profile" ? (
+          <Profile />
+        ) : (
+          <PronunciationGuide />
+        )}
+      </View>
 
-      {visibleScreen === "Home" ? (
-        <HomePage />
-      ) : visibleScreen === "TrackProgress" ? (
-        <TrackProgress />
-      ) : visibleScreen === "DailyChallenge" ? (
-        <DailyChallenge />
-      ) : visibleScreen === "Profile" ? (
-        <Profile />
-      ) : (
-        <PronunciationGuide />
-      )}
       {/* <Text style={{ color: "black", marginTop: 30, marginLeft: 85 }}>
         Malla Next week kaludham
       </Text>
