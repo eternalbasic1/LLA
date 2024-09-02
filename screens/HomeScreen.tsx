@@ -11,6 +11,11 @@ import BottomTabs from "../components/home/BottomTabs";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation";
 import Header from "../components/home/Header";
+import HomePage from "../features/HomePage";
+import TrackProgress from "../features/TrackProgress";
+import DailyChallenge from "../features/DailyChallenge";
+import Profile from "../features/Profile";
+import PronunciationGuide from "../features/PronunciationGuide";
 // import Post from '../components/home/Post'
 // import Stories from '../components/home/Stories'
 // import { POSTS } from '../data/posts'
@@ -65,17 +70,17 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={Styles.container}>
       <Header navigation={navigation} />
 
-      <Text style={{ color: "white", marginTop: 310, marginLeft: 125 }}>
-        {visibleScreen === "Home"
-          ? "HOME PAGE"
-          : visibleScreen === "TrackProgress"
-          ? "TRACK PROGRESS"
-          : visibleScreen === "DailyChallenge"
-          ? "DAILY CHALLENGE"
-          : visibleScreen === "Profile"
-          ? "PROFILE"
-          : "PRONUNCIATION GUIDE"}
-      </Text>
+      {visibleScreen === "Home" ? (
+        <HomePage />
+      ) : visibleScreen === "TrackProgress" ? (
+        <TrackProgress />
+      ) : visibleScreen === "DailyChallenge" ? (
+        <DailyChallenge />
+      ) : visibleScreen === "Profile" ? (
+        <Profile />
+      ) : (
+        <PronunciationGuide />
+      )}
       {/* <Text style={{ color: "black", marginTop: 30, marginLeft: 85 }}>
         Malla Next week kaludham
       </Text>
