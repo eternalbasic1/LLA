@@ -33,12 +33,22 @@ interface Props {
 const Header: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={handleSignout}>
+      <TouchableOpacity>
         <Image
           style={styles.logo}
           source={require("../../assets/header-logo-new.png")}
         />
       </TouchableOpacity>
+      <View style={styles.iconsContainer}>
+        <TouchableOpacity onPress={handleSignout}>
+          <Image
+            source={{
+              uri: "https://img.icons8.com/?size=100&id=24338&format=png&color=FFFFFF",
+            }}
+            style={styles.icon}
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
