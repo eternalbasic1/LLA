@@ -60,12 +60,21 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
       );
       console.log("Firebase user created successfully", email, password);
 
-      await setDoc(doc(db, "users", authUser.user.uid), {
-        owner_uid: authUser.user.uid,
-        username: username,
-        email: authUser.user.email,
-        profile_picture: await getRandomProfilePicture(),
-      });
+      // await setDoc(doc(db, "users", authUser.user.email), {
+      //   owner_uid: authUser.user.uid,
+      //   username: username,
+      //   email: authUser.user.email,
+      //   profile_picture: await getRandomProfilePicture(),
+      // });
+
+      if (authUser.user.email) {
+        await setDoc(doc(db, "users", authUser.user.email), {
+          owner_uid: authUser.user.uid,
+          username: username,
+          email: authUser.user.email,
+          profile_picture: await getRandomProfilePicture(),
+        });
+      }
 
       console.log("User document written");
     } catch (error: any) {
@@ -77,7 +86,11 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.wrapper}>
       <Formik
-        initialValues={{ email: "", username: "", password: "" }}
+        initialValues={{
+          email: "test2@gmail.com",
+          username: "test123",
+          password: "1234567",
+        }}
         onSubmit={(values) => {
           onSignup(values.email, values.password, values.username);
         }}
@@ -158,7 +171,7 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
                   backgroundColor: isValid ? "#0096F6" : "#9ACAF7",
                 },
               ]}
-              onPress={() => handleSubmit} // No type casting needed
+              onPress={() => handleSubmit()} // No type casting needed
               disabled={!isValid}
             >
               <Text style={styles.buttonText}>Sign Up</Text>
