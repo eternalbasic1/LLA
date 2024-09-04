@@ -16,6 +16,7 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  Image,
   StyleSheet,
 } from "react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
@@ -75,7 +76,23 @@ const HomePage: React.FC = () => {
   return (
     <View style={styles.container}>
       {selectedVideoId ? (
-        <YoutubePlayer height={300} play={true} videoId={selectedVideoId} />
+        <View>
+          <TouchableOpacity
+            onPress={() => setSelectedVideoId(null)}
+            style={{ marginBottom: 10 }}
+          >
+            <Image
+              source={{
+                uri: "https://img.icons8.com/?size=100&id=40217&format=png&color=FFFFFF",
+              }}
+              style={{
+                width: 30,
+                height: 30,
+              }}
+            />
+          </TouchableOpacity>
+          <YoutubePlayer height={300} play={true} videoId={selectedVideoId} />
+        </View>
       ) : (
         <FlatList
           data={videos}
