@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, FlatList, StyleSheet, Animated } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Animated,
+  Image,
+} from "react-native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function Profile() {
@@ -66,6 +73,14 @@ export default function Profile() {
       >
         Profile
       </Animated.Text>
+      <View style={styles.imageContainer}>
+        <Image
+          source={{
+            uri: "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1726325177~exp=1726328777~hmac=7b4002b89e9b8b4cbdecc0aed34f681e81c35b028a4ebf3d35880aa88724e5eb&w=996",
+          }}
+          style={styles.profileImage}
+        />
+      </View>
       {userData ? (
         <FlatList
           data={userData}
@@ -84,6 +99,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "black",
     padding: 20,
+    alignItems: "center", // Center items horizontally
   },
   heading: {
     color: "white",
@@ -92,6 +108,16 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginBottom: 20,
     fontWeight: "bold",
+  },
+  imageContainer: {
+    justifyContent: "center", // Center image container vertically
+    alignItems: "center", // Center image container horizontally
+    marginBottom: 100,
+  },
+  profileImage: {
+    height: 90,
+    width: 90,
+    borderRadius: 50,
   },
   item: {
     padding: 10,
@@ -115,7 +141,7 @@ const styles = StyleSheet.create({
   },
   value: {
     color: "white",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold", // Bold the value to make it stand out
   },
   noUserText: {

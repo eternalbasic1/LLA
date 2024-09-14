@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,6 +19,10 @@ interface Video {
 
 const HomePage: React.FC = () => {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [timeSpent, setTimeSpent] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const userId = "user123";
 
   const videos: Video[] = [
     { id: "1", title: "How to Learn a Language Fast", videoId: "zOIr3WNaTVY" },
@@ -38,6 +42,51 @@ const HomePage: React.FC = () => {
     </TouchableOpacity>
   );
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setTimeSpent((prev) => prev + 1); // Increment time spent each second
+      }, 1000);
+    }
+
+    // Clear the interval if the video is paused or ended
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isPlaying]);
+
+  const handleSaveProgress = async () => {
+    try {
+      const response = await fetch("http://192.168.1.2:3000/api/saveProgress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          moduleId: "module123",
+          videoId: "zOIr3WNaTVY",
+          timeSpent,
+          completed: true,
+          quizResults: [],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Progress saved successfully:", data);
+    } catch (error) {
+      console.error("Failed to save progress:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {selectedVideoId ? (
@@ -54,7 +103,19 @@ const HomePage: React.FC = () => {
                 style={styles.backIcon}
               />
             </TouchableOpacity>
-            <YoutubePlayer height={300} play={true} videoId={selectedVideoId} />
+            <YoutubePlayer
+              height={300}
+              play={isPlaying}
+              videoId={selectedVideoId}
+              onChangeState={(event) => {
+                if (event === "playing") {
+                  setIsPlaying(true);
+                } else if (event === "paused" || event === "ended") {
+                  setIsPlaying(false);
+                  handleSaveProgress();
+                }
+              }}
+            />
 
             {/* Only render the Quiz component if selectedVideoId is one of the valid video IDs */}
             {validVideoIds.includes(
