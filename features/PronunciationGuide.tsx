@@ -23,6 +23,7 @@ function pronunciationUI(value: string, speakText: (value: string) => void) {
       <TouchableOpacity
         onPress={() => speakText(value)}
         style={styles.speakerIconContainer}
+        id={value}
       >
         <Image
           source={{
@@ -142,7 +143,7 @@ export default function PronunciationGuide() {
         </Text>
 
         {/* Wrap the buttons in a View and use flexDirection: 'row' to align them side by side */}
-        <View style={styles.buttonContainer}>
+        <View style={styles.buttonContainer} id="RandomButtons">
           <Button title="Random Mode" onPress={handleRandomMode} />
           <Button title="Manual Mode" onPress={handleManualMode} />
         </View>
