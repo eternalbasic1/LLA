@@ -43,7 +43,11 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
     };
   }, [isPlaying]);
 
-  const handleSaveProgress = async () => {
+  const handleSaveProgress = async ({
+    videoId,
+  }: {
+    videoId: string | null;
+  }) => {
     try {
       const response = await fetch("http://192.168.1.2:3000/api/saveProgress", {
         method: "POST",
@@ -53,7 +57,7 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
         body: JSON.stringify({
           userId,
           moduleId: "module123",
-          videoId: "zOIr3WNaTVY",
+          videoId: videoId,
           timeSpent,
           completed: true,
           quizResults: [],
@@ -101,7 +105,7 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
               setIsPlaying(true);
             } else if (event === "paused" || event === "ended") {
               setIsPlaying(false);
-              handleSaveProgress();
+              handleSaveProgress({ videoId: selectedVideoId });
             }
           }}
         />
