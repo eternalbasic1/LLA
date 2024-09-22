@@ -1,7 +1,9 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 mongoose.connect("mongodb://localhost:27017/userProgress");
@@ -22,7 +24,15 @@ const Progress = mongoose.model("Progress", progressSchema);
 app.post("/api/saveProgress", async (req: Request, res: Response) => {
   const { userId, moduleId, videoId, timeSpent, completed, quizResults } =
     req.body;
-
+  // console.log(
+  //   "userId, moduleId, videoId, timeSpent, completed, quizResults",
+  //   userId,
+  //   moduleId,
+  //   videoId,
+  //   timeSpent,
+  //   completed,
+  //   quizResults
+  // );
   try {
     // Find existing progress for the user, module, and video
     const existingProgress = await Progress.findOne({
@@ -61,6 +71,10 @@ app.post("/api/saveProgress", async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).send("Error saving progress.");
   }
+});
+
+app.get("/api/greet", (req, res) => {
+  res.send("Hello, welcome to the server!");
 });
 
 app.listen(3000, () => {

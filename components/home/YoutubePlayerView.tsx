@@ -49,7 +49,17 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
     videoId: string | null;
   }) => {
     try {
-      const response = await fetch("http://192.168.1.2:3000/api/saveProgress", {
+      // console.log("handleSaveProgress- videoId", videoId);
+      // console.log(
+      //   "userId, moduleId, videoId, timeSpent, completed, quizResults",
+      //   userId,
+      //   videoId,
+      //   timeSpent
+      // );
+      // CHECK IFCONFIG, Look for the en0 or en1 Interface (usually en0 for Wi-Fi), You see inet 192.168.1.2 netmask 0xffffff00 broadcast 192.168.1.255 replace what you see in this case 192.168.1.2
+
+      // https://chatgpt.com/c/66efd9b1-e390-8013-bf57-59ab2b7e889e
+      const response = await fetch("http://192.168.1.7:3000/api/saveProgress", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
