@@ -26,7 +26,6 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
   const userIdRef = useRef(userId);
   const [isPlaying, setIsPlaying] = useState(false);
   const validVideoIds: string[] = ["zOIr3WNaTVY", "Rj8bxm0fERw"];
-  // const userId = "user123";
 
   useEffect(() => {
     const auth = getAuth();
@@ -59,13 +58,7 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
       });
     };
   }, []); // Only run once when the component mounts
-  // const auth = getAuth();
-  // const unsubscribe = onAuthStateChanged(auth, (user) => {
-  //   if (user) {
-  //     setUserId(user.uid);
-  //   }
-  // });
-  console.log("WTFFFFuserId", userId);
+
   const handleSaveProgress = async ({
     videoId,
     totalTimeSpent,
@@ -77,7 +70,6 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
   }) => {
     try {
       // CHECK IFCONFIG, Look for the en0 or en1 Interface (usually en0 for Wi-Fi), You see inet 192.168.1.2 netmask 0xffffff00 broadcast 192.168.1.255 replace what you see in this case 192.168.1.2
-
       // https://chatgpt.com/c/66efd9b1-e390-8013-bf57-59ab2b7e889e
       const response = await fetch("http://192.168.1.7:3000/api/saveProgress", {
         method: "POST",

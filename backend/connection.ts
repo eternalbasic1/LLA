@@ -24,15 +24,6 @@ const Progress = mongoose.model("Progress", progressSchema);
 app.post("/api/saveProgress", async (req: Request, res: Response) => {
   const { userId, moduleId, videoId, timeSpent, completed, quizResults } =
     req.body;
-  // console.log(
-  //   "userId, moduleId, videoId, timeSpent, completed, quizResults",
-  //   userId,
-  //   moduleId,
-  //   videoId,
-  //   timeSpent,
-  //   completed,
-  //   quizResults
-  // );
   try {
     // Find existing progress for the user, module, and video
     const existingProgress = await Progress.findOne({
@@ -73,8 +64,22 @@ app.post("/api/saveProgress", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/greet", (req, res) => {
-  res.send("Hello, welcome to the server!");
+app.get("/api/progress/:userId", async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  try {
+    // Find all progress records for the given userId
+    const progressRecords = await Progress.find({ userId });
+
+    if (progressRecords.length === 0) {
+      return res.status(404).send("No progress records found for this user.");
+    }
+
+    res.status(200).json(progressRecords);
+  } catch (error) {
+    console.error("Error fetching progress:", error);
+    res.status(500).send("Error fetching progress.");
+  }
 });
 
 app.listen(3000, () => {

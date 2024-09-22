@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   View,
   Text,
@@ -65,6 +66,27 @@ interface Props {
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [visibleScreen, setVisibleScreen] = useState("Home");
+  const [userId, setUserId] = useState<string | null>(null);
+  const userIdRef = useRef(userId);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // setUserId(user.uid);
+        setUserId(() => {
+          const newUserId = user.uid;
+          userIdRef.current = newUserId;
+          return newUserId;
+        });
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+  console.log("userId", userId);
+  console.log("userRef", userIdRef);
 
   return (
     <SafeAreaView style={Styles.container}>
@@ -73,7 +95,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         {visibleScreen === "Home" ? (
           <HomePage />
         ) : visibleScreen === "TrackProgress" ? (
-          <TrackProgress />
+          <TrackProgress userId={userIdRef.current ?? ""} />
         ) : visibleScreen === "DailyChallenge" ? (
           <DailyChallenge />
         ) : visibleScreen === "Profile" ? (
