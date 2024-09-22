@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
 import Quiz from "../../features/Quiz";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 interface YoutubePlayerViewProps {
   setSelectedVideoId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -20,12 +21,26 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
   selectedVideoId,
 }) => {
   const [timeSpent, setTimeSpent] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
   const timeSpentRef = useRef(timeSpent);
+  const userIdRef = useRef(userId);
   const [isPlaying, setIsPlaying] = useState(false);
   const validVideoIds: string[] = ["zOIr3WNaTVY", "Rj8bxm0fERw"];
-  const userId = "user123";
+  // const userId = "user123";
 
   useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // setUserId(user.uid);
+        setUserId(() => {
+          const newUserId = user.uid;
+          userIdRef.current = newUserId;
+          return newUserId;
+        });
+      }
+    });
+
     const interval = setInterval(() => {
       setTimeSpent((prev) => {
         const newTimeSpent = prev + 1;
@@ -35,20 +50,30 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
     }, 1000);
 
     return () => {
+      unsubscribe();
       clearInterval(interval);
       handleSaveProgress({
         videoId: selectedVideoId,
+        actualUserId: userIdRef.current ?? "",
         totalTimeSpent: timeSpentRef.current, // Use the ref here
       });
     };
   }, []); // Only run once when the component mounts
-
+  // const auth = getAuth();
+  // const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //   if (user) {
+  //     setUserId(user.uid);
+  //   }
+  // });
+  console.log("WTFFFFuserId", userId);
   const handleSaveProgress = async ({
     videoId,
     totalTimeSpent,
+    actualUserId,
   }: {
     videoId: string | null;
     totalTimeSpent: number;
+    actualUserId: string;
   }) => {
     try {
       // CHECK IFCONFIG, Look for the en0 or en1 Interface (usually en0 for Wi-Fi), You see inet 192.168.1.2 netmask 0xffffff00 broadcast 192.168.1.255 replace what you see in this case 192.168.1.2
@@ -60,7 +85,7 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId,
+          userId: actualUserId,
           moduleId: "module123",
           videoId,
           timeSpent: totalTimeSpent,
