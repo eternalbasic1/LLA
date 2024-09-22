@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -21,41 +20,37 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
   selectedVideoId,
 }) => {
   const [timeSpent, setTimeSpent] = useState(0);
+  const timeSpentRef = useRef(timeSpent);
   const [isPlaying, setIsPlaying] = useState(false);
   const validVideoIds: string[] = ["zOIr3WNaTVY", "Rj8bxm0fERw"];
-
   const userId = "user123";
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
+    const interval = setInterval(() => {
+      setTimeSpent((prev) => {
+        const newTimeSpent = prev + 1;
+        timeSpentRef.current = newTimeSpent; // Update the ref
+        return newTimeSpent;
+      });
+    }, 1000);
 
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setTimeSpent((prev) => prev + 1); // Increment time spent each second
-      }, 1000);
-    }
-
-    // Clear the interval if the video is paused or ended
     return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
+      clearInterval(interval);
+      handleSaveProgress({
+        videoId: selectedVideoId,
+        totalTimeSpent: timeSpentRef.current, // Use the ref here
+      });
     };
-  }, [isPlaying]);
+  }, []); // Only run once when the component mounts
 
   const handleSaveProgress = async ({
     videoId,
+    totalTimeSpent,
   }: {
     videoId: string | null;
+    totalTimeSpent: number;
   }) => {
     try {
-      // console.log("handleSaveProgress- videoId", videoId);
-      // console.log(
-      //   "userId, moduleId, videoId, timeSpent, completed, quizResults",
-      //   userId,
-      //   videoId,
-      //   timeSpent
-      // );
       // CHECK IFCONFIG, Look for the en0 or en1 Interface (usually en0 for Wi-Fi), You see inet 192.168.1.2 netmask 0xffffff00 broadcast 192.168.1.255 replace what you see in this case 192.168.1.2
 
       // https://chatgpt.com/c/66efd9b1-e390-8013-bf57-59ab2b7e889e
@@ -67,8 +62,8 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
         body: JSON.stringify({
           userId,
           moduleId: "module123",
-          videoId: videoId,
-          timeSpent,
+          videoId,
+          timeSpent: totalTimeSpent,
           completed: true,
           quizResults: [],
         }),
@@ -85,13 +80,6 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
     }
   };
 
-  useEffect(() => {
-    console.log("Open Youtube Triggered");
-
-    return () => {
-      console.log("Return Youtube Triggered");
-    };
-  }, []);
   return (
     <ScrollView>
       <View style={{ marginBottom: 100 }}>
@@ -115,11 +103,9 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
               setIsPlaying(true);
             } else if (event === "paused" || event === "ended") {
               setIsPlaying(false);
-              handleSaveProgress({ videoId: selectedVideoId });
             }
           }}
         />
-
         {/* Only render the Quiz component if selectedVideoId is one of the valid video IDs */}
         {validVideoIds.includes(
           selectedVideoId as (typeof validVideoIds)[number]
