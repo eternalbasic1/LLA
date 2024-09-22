@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, FlatList } from "react-native";
+import { View, Text, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { BarChart } from "react-native-chart-kit";
 
 const fetchUserProgress = async (actualUserId: string) => {
   try {
@@ -32,26 +33,50 @@ const UserProgressComponent: React.FC<{ userId: string }> = ({ userId }) => {
     loadUserProgress();
   }, [userId]);
 
-  const renderItem = ({ item }: { item: any }) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.videoId}>{item.videoId}</Text>
-      <Text style={styles.timeSpent}>{item.timeSpent} sec</Text>
-    </View>
-  );
+  const chartData = {
+    labels: progressData.map((item) => item.videoId),
+    datasets: [
+      {
+        data: progressData.map((item) => item.timeSpent),
+      },
+    ],
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>User Progress</Text>
-      {progressData.length > 0 ? (
-        <FlatList
-          data={progressData}
-          renderItem={renderItem}
-          keyExtractor={(item) => item._id}
-          contentContainerStyle={styles.listContainer}
-        />
-      ) : (
-        <Text style={styles.noDataText}>No progress data available.</Text>
-      )}
+      <Text style={styles.title}>Home Page</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {progressData.length > 0 ? (
+          <BarChart
+            data={chartData}
+            width={Dimensions.get("window").width * 1.5} // Increased width for scrolling
+            height={320}
+            yAxisLabel=""
+            yAxisSuffix=""
+            chartConfig={{
+              backgroundColor: "#2c3e50",
+              backgroundGradientFrom: "#2c3e50",
+              backgroundGradientTo: "#34495e",
+              color: (opacity = 1) => `rgba(236, 240, 241, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(236, 240, 241, ${opacity})`,
+              style: {
+                borderRadius: 16,
+              },
+              propsForDots: {
+                r: "6",
+                strokeWidth: "4",
+                stroke: "#ecf0f1",
+              },
+            }}
+            style={{
+              marginVertical: 10,
+              borderRadius: 9,
+            }}
+          />
+        ) : (
+          <Text style={styles.noDataText}>No progress data available.</Text>
+        )}
+      </ScrollView>
     </View>
   );
 };
@@ -59,7 +84,7 @@ const UserProgressComponent: React.FC<{ userId: string }> = ({ userId }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#2c3e50",
+    backgroundColor: "black",
     padding: 20,
     justifyContent: "center",
     alignItems: "center",
@@ -73,25 +98,6 @@ const styles = StyleSheet.create({
     color: "#ecf0f1",
     fontSize: 16,
     marginTop: 20,
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  itemContainer: {
-    backgroundColor: "#34495e",
-    padding: 15,
-    marginVertical: 8,
-    borderRadius: 10,
-    width: Dimensions.get("window").width - 40, // Responsive width
-  },
-  videoId: {
-    color: "#ecf0f1",
-    fontSize: 18,
-  },
-  timeSpent: {
-    color: "#ecf0f1",
-    fontSize: 16,
-    marginTop: 5,
   },
 });
 
