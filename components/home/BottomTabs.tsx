@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   wrapper: {
     width: "100%",
     position: "absolute",
-    bottom: 0,
+    bottom: 24,
     zIndex: 99,
     backgroundColor: "#000",
   },

@@ -24,7 +24,7 @@
           "cleartextTrafficPermitted": true,
           "domain": {
             "includeSubdomains": true,
-            "name": "192.168.1.7"
+            "name": "192.168.1.3"
           }
         }
       }
