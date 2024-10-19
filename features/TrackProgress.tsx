@@ -5,7 +5,7 @@ import { BarChart } from "react-native-chart-kit";
 const fetchUserProgress = async (actualUserId: string) => {
   try {
     const response = await fetch(
-      `http://192.168.1.7:3000/api/progress/${actualUserId}`
+      `http://192.168.1.5:3000/api/progress/${actualUserId}`
     );
 
     if (!response.ok) {
@@ -34,7 +34,7 @@ const UserProgressComponent: React.FC<{ userId: string }> = ({ userId }) => {
   }, [userId]);
 
   const chartData = {
-    labels: progressData.map((item) => item.videoId),
+    labels: progressData.map((item) => item.videoName),
     datasets: [
       {
         data: progressData.map((item) => item.timeSpent),

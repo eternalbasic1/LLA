@@ -32,7 +32,7 @@ export default function DailyChallenge() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
-    fetch("http://192.168.1.7:3000/api/quiz")
+    fetch("http://192.168.1.5:3000/api/quiz")
       .then((res) => res.json())
       .then((data) => setQuizzes(data));
   }, []);

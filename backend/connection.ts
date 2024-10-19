@@ -30,6 +30,7 @@ const progressSchema = new mongoose.Schema({
   userId: String,
   moduleId: String,
   videoId: String,
+  videoName: String,
   timeSpent: Number, // in seconds
   completed: Boolean,
   quizResults: Array,
