@@ -63,6 +63,13 @@ export default function DailyChallenge() {
     setIsSubmitted(false);
   };
 
+  const handleCompleteQuiz = () => {
+    setSelectedQuiz(null); // Reset selected quiz to show the quiz selection page
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setIsSubmitted(false);
+  };
+
   if (!selectedQuiz) {
     return (
       <View style={styles.container}>
@@ -121,14 +128,25 @@ export default function DailyChallenge() {
         </Text>
       )}
 
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={isSubmitted ? handleNextQuestion : handleSubmit}
-      >
-        <Text style={styles.submitButtonText}>
-          {isSubmitted ? "Next Question" : "Submit"}
-        </Text>
-      </TouchableOpacity>
+      {/* Show Complete button if it's the last question */}
+      {isSubmitted &&
+      currentQuestionIndex === selectedQuiz.questions.length - 1 ? (
+        <TouchableOpacity
+          style={styles.completeButton}
+          onPress={handleCompleteQuiz}
+        >
+          <Text style={styles.completeButtonText}>Complete Quiz</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={isSubmitted ? handleNextQuestion : handleSubmit}
+        >
+          <Text style={styles.submitButtonText}>
+            {isSubmitted ? "Next Question" : "Submit"}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -174,7 +192,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   selectedAnswer: {
-    backgroundColor: "#4e90d6", // Highlight selected answer
+    backgroundColor: "#4e90d6",
   },
   answerText: {
     color: "white",
@@ -196,10 +214,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#4e90d6",
     paddingVertical: 15,
     borderRadius: 10,
-    marginBottom: 250,
+    marginBottom: 230,
     alignItems: "center",
   },
   submitButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  completeButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginBottom: 150,
+    alignItems: "center",
+  },
+  completeButtonText: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
