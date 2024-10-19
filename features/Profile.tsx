@@ -57,8 +57,19 @@ export default function Profile() {
   const renderItem = ({ item }: { item: any }) => (
     <Animated.View style={[styles.item, { opacity: fadeAnim }]}>
       <View style={styles.itemContainer}>
-        <Text style={styles.title}>{item.title}:</Text>
-        <Text style={styles.value}>{item.value}</Text>
+        {item.title === "User ID" ? (
+          <>
+            <Text style={styles.title}>{item.title}:</Text>
+            <Text style={styles.value}>
+              {item.value.substring(0, 10) + "******"}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.title}>{item.title}:</Text>
+            <Text style={styles.value}>{item.value}</Text>
+          </>
+        )}
       </View>
     </Animated.View>
   );
@@ -76,7 +87,7 @@ export default function Profile() {
       <View style={styles.imageContainer}>
         <Image
           source={{
-            uri: "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1726325177~exp=1726328777~hmac=7b4002b89e9b8b4cbdecc0aed34f681e81c35b028a4ebf3d35880aa88724e5eb&w=996",
+            uri: "https://img.icons8.com/?size=100&id=20750&format=png&color=000000",
           }}
           style={styles.profileImage}
         />
@@ -98,6 +109,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "black",
+    marginTop: 30,
     padding: 20,
     alignItems: "center", // Center items horizontally
   },
@@ -112,7 +124,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     justifyContent: "center", // Center image container vertically
     alignItems: "center", // Center image container horizontally
-    marginBottom: 100,
+    marginBottom: 20,
   },
   profileImage: {
     height: 90,
@@ -132,7 +144,8 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flexDirection: "row", // Align title and value side by side
-    justifyContent: "space-between", // Space between title and value
+    justifyContent: "space-between",
+    width: "100%", // Space between title and value
   },
   title: {
     color: "#aaa", // Lighter gray for titles

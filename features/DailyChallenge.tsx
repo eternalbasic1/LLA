@@ -27,7 +27,7 @@ export default function DailyChallenge() {
 
   useEffect(() => {
     // Fetch all quiz data from the backend
-    fetch("http://192.168.1.3:3000/api/quiz")
+    fetch("http://192.168.1.7:3000/api/quiz")
       .then((res) => res.json())
       .then((data) => setQuizzes(data)); // Store the array of quizzes
   }, []);
