@@ -58,16 +58,17 @@ const styles = StyleSheet.create({
   wrapper: {
     width: "100%",
     position: "absolute",
-    bottom: 24,
+    bottom: 0, // Stick to the bottom
     zIndex: 99,
-    backgroundColor: "#000",
+    backgroundColor: "#000", // Black background for the entire bottom tab
+    paddingBottom: 10, // Optional: Add padding if needed
   },
 
   container: {
     flexDirection: "row",
     justifyContent: "space-around",
-    height: 45,
-    paddingTop: 10,
+    height: 60, // Increased height for better touch target
+    alignItems: "center", // Center icons vertically
   },
 
   icon: {
