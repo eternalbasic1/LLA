@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  Button,
   TouchableOpacity,
   Image,
   ScrollView,
@@ -37,9 +36,7 @@ function pronunciationUI(value: string, speakText: (value: string) => void) {
 }
 
 const getRandomWords = (words: string[], count: number): string[] => {
-  // Shuffle the array
   const shuffled = words.sort(() => 0.5 - Math.random());
-  // Return the first `count` elements
   return shuffled.slice(0, count);
 };
 
@@ -48,11 +45,8 @@ const handleSubmit = (
   text: string,
   speakText: (value: string) => void
 ) => {
-  // Close the keyboard
   e.preventDefault();
   Keyboard.dismiss();
-
-  // Submit
   speakText(text);
 };
 
@@ -126,7 +120,6 @@ export default function PronunciationGuide() {
   const handleRandomMode = () => {
     setSelectRandom(true);
     setSelectManualSpell(false);
-    // Set a random selection of 5 words
     setRandomWordsToDisplay(getRandomWords(randomWords, 5));
   };
 
@@ -136,109 +129,130 @@ export default function PronunciationGuide() {
   };
 
   return (
-    <ScrollView>
-      <View style={{ marginBottom: 40 }}>
-        <Text id="PronunctionGuide" style={styles.title}>
-          Pronunciation Guide
-        </Text>
+    <ScrollView style={styles.container}>
+      <Text id="PronunctionGuide" style={styles.title}>
+        Pronunciation Guide
+      </Text>
 
-        {/* Wrap the buttons in a View and use flexDirection: 'row' to align them side by side */}
-        <View style={styles.buttonContainer} id="RandomButtons">
-          <Button title="Random Mode" onPress={handleRandomMode} />
-          <Button title="Manual Mode" onPress={handleManualMode} />
-        </View>
-
-        {selectRandom &&
-          randomWordsToDisplay.map((word) => pronunciationUI(word, speakText))}
-        {selectManualSpell && (
-          <View style={styles.manualSpellContainer}>
-            <Text style={styles.inputLabel} id="TextBox">
-              Enter text:
-            </Text>
-            <TextInput
-              style={styles.textInput}
-              id="TextInput"
-              placeholder="Type here"
-              value={text}
-              onChangeText={(newText) => setText(newText)}
-              placeholderTextColor="#aaa"
-            />
-            <Button
-              title="Speak"
-              onPress={() => speakText(text)}
-              color="#007bff" // Optional: you can choose a color for the button
-            />
-          </View>
-        )}
-        {/* {selectRandom == false && selectManualSpell == false && (
-          <Text
-            style={{
-              color: "white",
-              fontWeight: "bold",
-              fontSize: 20,
-              marginLeft: 20,
-            }}
-          >
-            Select Any Mode{" "}
-          </Text>
-        )} */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleRandomMode} style={styles.modeButton}>
+          <Text style={styles.buttonText}>Random Mode</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleManualMode} style={styles.modeButton}>
+          <Text style={styles.buttonText}>Manual Mode</Text>
+        </TouchableOpacity>
       </View>
+
+      {selectRandom &&
+        randomWordsToDisplay.map((word) => pronunciationUI(word, speakText))}
+
+      {selectManualSpell && (
+        <View style={styles.manualSpellContainer}>
+          <Text style={styles.inputLabel} id="TextBox">
+            Enter text:
+          </Text>
+          <TextInput
+            style={styles.textInput}
+            id="TextInput"
+            placeholder="Type here"
+            value={text}
+            onChangeText={(newText) => setText(newText)}
+            placeholderTextColor="#aaa"
+          />
+          <TouchableOpacity
+            onPress={() => speakText(text)}
+            style={styles.speakButton}
+          >
+            <Text style={styles.speakButtonText}>Speak</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 16, // Light background for better contrast
+  },
   title: {
-    color: "white",
-    marginTop: 10,
-    marginLeft: 100,
-    fontSize: 18,
-    fontWeight: "bold", // Add font weight
+    color: "#f8f9fa",
+    marginTop: 30,
+    textAlign: "center",
+    fontSize: 22,
+    fontWeight: "bold",
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginVertical: 10,
+    marginVertical: 20,
+  },
+  modeButton: {
+    backgroundColor: "#007bff",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   manualSpellContainer: {
-    backgroundColor: "#333", // Dark background for contrast
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    marginVertical: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+    marginVertical: 20,
   },
   inputLabel: {
-    color: "white",
+    color: "#333",
     fontSize: 16,
     marginBottom: 10,
   },
   textInput: {
-    backgroundColor: "white",
+    backgroundColor: "#e9ecef",
     borderRadius: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginBottom: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginBottom: 20,
     fontSize: 16,
-    color: "#333", // Text color in the input field
+    color: "#333",
+  },
+  speakButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  speakButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   wordContainer: {
-    backgroundColor: "white",
-    margin: 15,
+    backgroundColor: "#fff",
     padding: 15,
     borderRadius: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginVertical: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    elevation: 5, // Adds shadow for Android
+    elevation: 5,
   },
   wordText: {
-    color: "black",
     fontSize: 18,
-    fontFamily: "sans-serif",
-    flex: 1,
+    color: "#333",
+    fontWeight: "bold",
   },
   speakerIconContainer: {
     paddingLeft: 10,

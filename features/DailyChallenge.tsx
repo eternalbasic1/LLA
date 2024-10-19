@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 
-// Define TypeScript interfaces for the quiz structure
 interface Answer {
   answerId: number;
   text: string;
@@ -19,17 +25,16 @@ interface Quiz {
 }
 
 export default function DailyChallenge() {
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]); // State to hold the list of quizzes
-  const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null); // State for the selected quiz
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
-    // Fetch all quiz data from the backend
     fetch("http://192.168.1.7:3000/api/quiz")
       .then((res) => res.json())
-      .then((data) => setQuizzes(data)); // Store the array of quizzes
+      .then((data) => setQuizzes(data));
   }, []);
 
   const handleAnswerSelect = (answerId: number) => {
@@ -53,31 +58,24 @@ export default function DailyChallenge() {
 
   const handleQuizSelect = (quiz: Quiz) => {
     setSelectedQuiz(quiz);
-    setCurrentQuestionIndex(0); // Reset question index for new quiz
-    setSelectedAnswer(null); // Reset selected answer
-    setIsSubmitted(false); // Reset submitted status
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setIsSubmitted(false);
   };
 
-  // Render the quiz selection if no quiz is selected
   if (!selectedQuiz) {
     return (
-      <View style={{ padding: 20 }}>
-        <Text style={{ color: "white", fontSize: 24, marginBottom: 20 }}>
-          Select a Quiz
-        </Text>
+      <View style={styles.container}>
+        <Text style={styles.heading}>Select a Quiz</Text>
         <FlatList
           data={quizzes}
           keyExtractor={(item) => item.quizTitle}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={{
-                backgroundColor: "gray",
-                marginVertical: 10,
-                padding: 10,
-              }}
+              style={styles.quizCard}
               onPress={() => handleQuizSelect(item)}
             >
-              <Text style={{ color: "white" }}>{item.quizTitle}</Text>
+              <Text style={styles.quizTitle}>{item.quizTitle}</Text>
             </TouchableOpacity>
           )}
         />
@@ -85,49 +83,125 @@ export default function DailyChallenge() {
     );
   }
 
-  // Render the selected quiz
   const currentQuestion = selectedQuiz.questions[currentQuestionIndex];
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ color: "white", fontSize: 24, marginBottom: 20 }}>
-        {selectedQuiz.quizTitle}
-      </Text>
-
-      <Text style={{ color: "white", fontSize: 18 }}>
-        {currentQuestion.questionText}
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.heading}>{selectedQuiz.quizTitle}</Text>
+      <Text style={styles.questionText}>{currentQuestion.questionText}</Text>
 
       <FlatList
         data={currentQuestion.answers}
         keyExtractor={(item) => item.answerId.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={{
-              backgroundColor:
-                selectedAnswer === item.answerId ? "blue" : "gray",
-              marginVertical: 10,
-              padding: 10,
-            }}
+            style={[
+              styles.answerButton,
+              selectedAnswer === item.answerId && styles.selectedAnswer,
+            ]}
             onPress={() => handleAnswerSelect(item.answerId)}
           >
-            <Text style={{ color: "white" }}>{item.text}</Text>
+            <Text style={styles.answerText}>{item.text}</Text>
           </TouchableOpacity>
         )}
       />
 
       {isSubmitted && (
-        <Text style={{ color: "white", marginTop: 20 }}>
+        <Text
+          style={[
+            styles.feedbackText,
+            selectedAnswer === currentQuestion.correctAnswerId
+              ? styles.correctAnswer
+              : styles.incorrectAnswer,
+          ]}
+        >
           {selectedAnswer === currentQuestion.correctAnswerId
             ? "Correct!"
             : "Incorrect!"}
         </Text>
       )}
 
-      <Button
-        title={isSubmitted ? "Next Question" : "Submit"}
+      <TouchableOpacity
+        style={styles.submitButton}
         onPress={isSubmitted ? handleNextQuestion : handleSubmit}
-      />
+      >
+        <Text style={styles.submitButtonText}>
+          {isSubmitted ? "Next Question" : "Submit"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#121212",
+  },
+  heading: {
+    color: "white",
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  quizCard: {
+    backgroundColor: "#1f1f1f",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  quizTitle: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  questionText: {
+    color: "white",
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  answerButton: {
+    backgroundColor: "#333",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    alignItems: "center",
+  },
+  selectedAnswer: {
+    backgroundColor: "#4e90d6", // Highlight selected answer
+  },
+  answerText: {
+    color: "white",
+    fontSize: 16,
+  },
+  feedbackText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 20,
+    textAlign: "center",
+  },
+  correctAnswer: {
+    color: "green",
+  },
+  incorrectAnswer: {
+    color: "red",
+  },
+  submitButton: {
+    backgroundColor: "#4e90d6",
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginBottom: 250,
+    alignItems: "center",
+  },
+  submitButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+});
