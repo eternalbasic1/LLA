@@ -1,13 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  Image,
-} from "react-native";
+import { View, SafeAreaView, StyleSheet } from "react-native";
 import BottomTabs from "../components/home/BottomTabs";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation";
@@ -17,11 +10,9 @@ import TrackProgress from "../features/TrackProgress";
 import DailyChallenge from "../features/DailyChallenge";
 import Profile from "../features/Profile";
 import PronunciationGuide from "../features/PronunciationGuide";
-// import Post from '../components/home/Post'
-// import Stories from '../components/home/Stories'
-// import { POSTS } from '../data/posts'
-// import {db} from '../firebase'
+import Forum from "../features/Forum";
 
+// Define bottom tab icons
 const bottomtabicons = [
   {
     name: "Home",
@@ -52,6 +43,12 @@ const bottomtabicons = [
     inactive:
       "https://img.icons8.com/?size=100&id=7820&format=png&color=FFFFFF",
   },
+  {
+    name: "Chat", // New chat icon
+    active:
+      "https://img.icons8.com/?size=100&id=118374&format=png&color=FFFFFF",
+    inactive: "https://img.icons8.com/?size=100&id=143&format=png&color=FFFFFF",
+  },
 ];
 
 // Define navigation prop type
@@ -73,7 +70,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // setUserId(user.uid);
         setUserId(() => {
           const newUserId = user.uid;
           userIdRef.current = newUserId;
@@ -85,8 +81,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       unsubscribe();
     };
   }, []);
-  console.log("userId", userId);
-  console.log("userRef", userIdRef);
 
   return (
     <SafeAreaView style={Styles.container}>
@@ -100,17 +94,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <DailyChallenge />
         ) : visibleScreen === "Profile" ? (
           <Profile />
+        ) : visibleScreen === "Chat" ? ( // New Chat screen rendering
+          <Forum userId={userIdRef.current ?? ""} /> // Pass userId here
         ) : (
           <PronunciationGuide />
         )}
       </View>
 
-      {/* <Text style={{ color: "black", marginTop: 30, marginLeft: 85 }}>
-        Malla Next week kaludham
-      </Text>
-      <Text style={{ color: "black", marginTop: 30, marginLeft: 85 }}>
-        OK BYE freinds...👋
-      </Text> */}
       <BottomTabs icons={bottomtabicons} setVisibleScreen={setVisibleScreen} />
     </SafeAreaView>
   );

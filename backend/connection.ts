@@ -1,11 +1,14 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/userProgress");
 
 // Define schema for quiz
@@ -36,19 +39,26 @@ const progressSchema = new mongoose.Schema({
   quizResults: Array,
 });
 
-const Quiz = mongoose.model("quiz", quizSchema);
+// Define schema for chat messages
+const messageSchema = new mongoose.Schema({
+  userId: String,
+  text: String,
+  timestamp: { type: Date, default: Date.now },
+});
+
+// Create models
+const Quiz = mongoose.model("Quiz", quizSchema);
 const Progress = mongoose.model("Progress", progressSchema);
+const Message = mongoose.model("Message", messageSchema);
 
 // Fetch quiz data API
-// New API to fetch quiz data
 app.get("/api/quiz", async (req: Request, res: Response) => {
   try {
-    console.log("triggered quiz");
+    console.log("Fetching quiz data");
     const quizzes = await mongoose.connection
       .collection("quiz")
       .find()
-      .toArray(); // Notice the collection name 'quiz'
-    console.log("quizzes", quizzes);
+      .toArray();
     res.status(200).json(quizzes);
   } catch (error) {
     console.error("Error fetching quizzes:", error);
@@ -96,17 +106,14 @@ app.post("/api/saveProgress", async (req: Request, res: Response) => {
   }
 });
 
+// Get progress for a specific user
 app.get("/api/progress/:userId", async (req: Request, res: Response) => {
   const { userId } = req.params;
-
   try {
-    // Find all progress records for the given userId
     const progressRecords = await Progress.find({ userId });
-
     if (progressRecords.length === 0) {
       return res.status(404).send("No progress records found for this user.");
     }
-
     res.status(200).json(progressRecords);
   } catch (error) {
     console.error("Error fetching progress:", error);
@@ -114,6 +121,51 @@ app.get("/api/progress/:userId", async (req: Request, res: Response) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+// Fetch all chat messages (for initial load)
+app.get("/api/messages", async (req: Request, res: Response) => {
+  try {
+    const messages = await Message.find().sort({ timestamp: 1 });
+    res.json(messages);
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    res.status(500).send("Error fetching messages.");
+  }
+});
+
+// Initialize HTTP server and WebSocket
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Update in production with specific domain
+  },
+});
+
+// WebSocket connection handling
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  // Listen for new messages from clients
+  socket.on("newMessage", async (data) => {
+    // Save the message to MongoDB
+    const newMessage = new Message({
+      userId: data.userId,
+      text: data.text,
+      timestamp: new Date(),
+    });
+    await newMessage.save();
+
+    // Broadcast the message to all connected clients
+    io.emit("message", newMessage);
+  });
+
+  // Handle user disconnect
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+// Start server
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
