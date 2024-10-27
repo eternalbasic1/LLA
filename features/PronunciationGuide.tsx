@@ -12,17 +12,19 @@ import {
 } from "react-native";
 import * as Speech from "expo-speech";
 
-function pronunciationUI(value: string, speakText: (value: string) => void) {
+function pronunciationUI(
+  word: string,
+  meaning: string,
+  speakText: (value: string) => void
+) {
   return (
-    <View style={styles.wordContainer} id={value}>
-      <Text style={styles.wordText} id={value}>
-        {value}
-      </Text>
+    <View style={styles.wordContainer} key={word}>
+      <Text style={styles.wordText}>{word}</Text>
+      <Text style={styles.meaningText}>{meaning}</Text>
 
       <TouchableOpacity
-        onPress={() => speakText(value)}
+        onPress={() => speakText(word)}
         style={styles.speakerIconContainer}
-        id={value}
       >
         <Image
           source={{
@@ -35,9 +37,13 @@ function pronunciationUI(value: string, speakText: (value: string) => void) {
   );
 }
 
-const getRandomWords = (words: string[], count: number): string[] => {
-  const shuffled = words.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
+const getWordsByDifficulty = (
+  wordsWithMeanings: { word: string; meaning: string; difficulty: string }[],
+  difficulty: string
+) => {
+  return wordsWithMeanings.filter(
+    (wordObj) => wordObj.difficulty === difficulty
+  );
 };
 
 const handleSubmit = (
@@ -51,109 +57,164 @@ const handleSubmit = (
 };
 
 export default function PronunciationGuide() {
-  const [selectRandom, setSelectRandom] = useState(false);
+  const [selectDictionary, setSelectDictionary] = useState(false);
   const [selectManualSpell, setSelectManualSpell] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState("Easy");
   const [text, setText] = useState("");
-  const [randomWordsToDisplay, setRandomWordsToDisplay] = useState<string[]>(
-    []
-  );
+  const [wordsToDisplay, setWordsToDisplay] = useState<
+    { word: string; meaning: string }[]
+  >([]);
 
-  const randomWords = [
-    "Sunrise",
-    "Elephant",
-    "Castle",
-    "Harmony",
-    "Journey",
-    "Vision",
-    "Paradise",
-    "Adventure",
-    "Whale",
-    "Phoenix",
-    "Crystal",
-    "Victory",
-    "Lighthouse",
-    "Breeze",
-    "Infinity",
-    "Galaxy",
-    "Forest",
-    "Echo",
-    "Serenity",
-    "Thunder",
-    "Oasis",
-    "Sunset",
-    "Zephyr",
-    "Meteor",
-    "Renaissance",
-    "Orbit",
-    "Horizon",
-    "Voyage",
-    "Nebula",
-    "Aurora",
-    "Quasar",
-    "Tide",
-    "Wilderness",
-    "Cascade",
-    "Eclipse",
-    "Labyrinth",
-    "Zenith",
-    "Twilight",
-    "Mirage",
-    "Celestial",
-    "Aurora",
-    "Solstice",
-    "Tranquil",
-    "Cascade",
-    "Mosaic",
-    "Ember",
-    "Glimmer",
-    "Mystic",
-    "Zen",
-    "Horizon",
-    "Epiphany",
-    "Odyssey",
+  const wordsWithMeanings = [
+    // Easy
+    {
+      word: "Sunrise",
+      meaning: "The first appearance of the sun in the morning",
+      difficulty: "Easy",
+    },
+    {
+      word: "Castle",
+      meaning: "A large building typically fortified",
+      difficulty: "Easy",
+    },
+    {
+      word: "River",
+      meaning: "A natural stream of water flowing",
+      difficulty: "Easy",
+    },
+    {
+      word: "Garden",
+      meaning: "A piece of ground used for growing flowers or vegetables",
+      difficulty: "Easy",
+    },
+    {
+      word: "Bridge",
+      meaning: "A structure built to span a physical obstacle",
+      difficulty: "Easy",
+    },
+
+    // Medium
+    {
+      word: "Journey",
+      meaning: "An act of traveling from one place to another",
+      difficulty: "Medium",
+    },
+    {
+      word: "Harmony",
+      meaning: "A pleasing combination or arrangement of parts",
+      difficulty: "Medium",
+    },
+    {
+      word: "Exquisite",
+      meaning: "Extremely beautiful or delicate",
+      difficulty: "Medium",
+    },
+    {
+      word: "Enigmatic",
+      meaning: "Difficult to interpret or understand",
+      difficulty: "Medium",
+    },
+    {
+      word: "Cascade",
+      meaning: "A process whereby something is passed on successively",
+      difficulty: "Medium",
+    },
+
+    // Hard
+    {
+      word: "Pernicious",
+      meaning: "Having a harmful effect, especially in a gradual way",
+      difficulty: "Hard",
+    },
+    {
+      word: "Antithesis",
+      meaning: "A contrast or opposition between two things",
+      difficulty: "Hard",
+    },
+    {
+      word: "Ephemeral",
+      meaning: "Lasting for a very short time",
+      difficulty: "Hard",
+    },
+    {
+      word: "Labyrinthine",
+      meaning: "Complicated and difficult to find one's way",
+      difficulty: "Hard",
+    },
+    {
+      word: "Imbroglio",
+      meaning: "An extremely confused, complicated, or embarrassing situation",
+      difficulty: "Hard",
+    },
   ];
 
   const speakText = (value: string) => {
     Speech.speak(value);
   };
 
-  const handleRandomMode = () => {
-    setSelectRandom(true);
+  const handleDictionaryMode = () => {
+    setSelectDictionary(true);
     setSelectManualSpell(false);
-    setRandomWordsToDisplay(getRandomWords(randomWords, 5));
+    setWordsToDisplay(
+      getWordsByDifficulty(wordsWithMeanings, selectedDifficulty)
+    );
   };
 
   const handleManualMode = () => {
     setSelectManualSpell(true);
-    setSelectRandom(false);
+    setSelectDictionary(false);
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Text id="PronunctionGuide" style={styles.title}>
+      <Text id="PronunciationGuide" style={styles.title}>
         Pronunciation Guide
       </Text>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleRandomMode} style={styles.modeButton}>
-          <Text style={styles.buttonText}>Random Mode</Text>
+        <TouchableOpacity
+          onPress={handleDictionaryMode}
+          style={styles.modeButton}
+        >
+          <Text style={styles.buttonText}>Dictionary</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleManualMode} style={styles.modeButton}>
-          <Text style={styles.buttonText}>Manual Mode</Text>
+          <Text style={styles.buttonText}>Pronunciation</Text>
         </TouchableOpacity>
       </View>
 
-      {selectRandom &&
-        randomWordsToDisplay.map((word) => pronunciationUI(word, speakText))}
+      {selectDictionary && (
+        <View style={styles.difficultyContainer}>
+          {["Easy", "Medium", "Hard"].map((level) => (
+            <TouchableOpacity
+              key={level}
+              style={[
+                styles.difficultyButton,
+                selectedDifficulty === level && styles.selectedDifficultyButton,
+              ]}
+              onPress={() => {
+                setSelectedDifficulty(level);
+                setWordsToDisplay(
+                  getWordsByDifficulty(wordsWithMeanings, level)
+                );
+              }}
+            >
+              <Text style={styles.difficultyText}>{level}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {selectDictionary &&
+        wordsToDisplay.map(({ word, meaning }) =>
+          pronunciationUI(word, meaning, speakText)
+        )}
 
       {selectManualSpell && (
         <View style={styles.manualSpellContainer}>
-          <Text style={styles.inputLabel} id="TextBox">
-            Enter text:
-          </Text>
+          <Text style={styles.inputLabel}>Enter text:</Text>
           <TextInput
             style={styles.textInput}
-            id="TextInput"
             placeholder="Type here"
             value={text}
             onChangeText={(newText) => setText(newText)}
@@ -174,7 +235,8 @@ export default function PronunciationGuide() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16, // Light background for better contrast
+    paddingHorizontal: 16,
+    marginBottom: 120,
   },
   title: {
     color: "#f8f9fa",
@@ -198,6 +260,28 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  difficultyContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 10,
+  },
+  difficultyLabel: {
+    fontSize: 16,
+    color: "#333",
+    marginRight: 10,
+  },
+  difficultyButton: {
+    backgroundColor: "#e9ecef",
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 5,
+  },
+  selectedDifficultyButton: {
+    backgroundColor: "green",
+  },
+  difficultyText: {
+    color: "#333",
   },
   manualSpellContainer: {
     backgroundColor: "#fff",
@@ -239,9 +323,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 15,
     borderRadius: 8,
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginVertical: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -254,8 +338,13 @@ const styles = StyleSheet.create({
     color: "#333",
     fontWeight: "bold",
   },
+  meaningText: {
+    fontSize: 14,
+    color: "#555",
+    marginTop: 4,
+  },
   speakerIconContainer: {
-    paddingLeft: 10,
+    paddingTop: 10,
   },
   speakerIcon: {
     width: 30,
