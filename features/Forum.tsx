@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  FlatList,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -19,7 +19,6 @@ interface Message {
   _id: string;
   userId: string;
   text: string;
-  timestamp: string;
 }
 
 const socket: Socket = io("http://192.168.1.3:3000");
@@ -31,6 +30,7 @@ interface Props {
 const Forum: React.FC<Props> = ({ userId }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState<string>("");
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -55,61 +55,64 @@ const Forum: React.FC<Props> = ({ userId }) => {
     };
   }, []);
 
+  useEffect(() => {
+    // Scroll to the bottom when a new message is added
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
+
   const handleSend = () => {
     if (text.trim()) {
-      socket.emit("newMessage", { userId, text }, (response: any) => {
-        if (response.error) {
-          console.error("Error sending message:", response.error);
-        }
-      });
+      socket.emit("newMessage", { userId, text });
       setText("");
       Keyboard.dismiss();
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.innerContainer}>
-          <Text style={styles.welcomeText}>Discuss Here</Text>
-          <Image
-            source={{
-              uri: "https://img.icons8.com/?size=100&id=118374&format=png&color=FFFFFF",
-            }}
-            style={styles.image}
-          />
-          <FlatList
-            data={messages}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <View style={styles.messageContainer}>
-                <Text style={styles.messageText}>
-                  <Text style={styles.userId}>{item.userId}: </Text>
-                  {item.text}
-                </Text>
-              </View>
-            )}
-            contentContainerStyle={styles.listContent}
-          />
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={text}
-              onChangeText={setText}
-              placeholder="Type a message..."
-              placeholderTextColor="#999"
-              onSubmitEditing={handleSend}
-            />
-            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-              <Text style={styles.sendButtonText}>Send</Text>
-            </TouchableOpacity>
+    <View style={styles.innerContainer}>
+      <Text style={styles.welcomeText}>Discuss Here</Text>
+      <Image
+        source={{
+          uri: "https://img.icons8.com/?size=100&id=118374&format=png&color=FFFFFF",
+        }}
+        style={styles.image}
+      />
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {messages.map((item) => (
+          <View key={item._id} style={styles.messageContainer}>
+            <Text style={styles.messageText}>
+              <Text style={styles.userId}>{item.userId}: </Text>
+              {item.text}
+            </Text>
           </View>
+        ))}
+      </ScrollView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={90}
+      >
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={text}
+            onChangeText={setText}
+            placeholder="Type a message..."
+            placeholderTextColor="#999"
+            onSubmitEditing={handleSend}
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
         </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 
@@ -120,13 +123,23 @@ const styles = StyleSheet.create({
   innerContainer: {
     flex: 1,
     padding: 16,
-    marginBottom: 120,
   },
   welcomeText: {
     color: "#fff",
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 12,
+  },
+  image: {
+    width: 40,
+    height: 40,
+    marginBottom: 20,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 100,
   },
   messageContainer: {
     marginBottom: 10,
@@ -147,12 +160,9 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 110,
     marginTop: 10,
-  },
-  image: {
-    width: 40, // Set width of the image
-    height: 40, // Set height of the image
-    marginBottom: 20, // Add space below the image
+    paddingHorizontal: 16,
   },
   input: {
     flex: 1,
@@ -173,9 +183,6 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: "#fff",
     fontWeight: "bold",
-  },
-  listContent: {
-    paddingBottom: 60,
   },
 });
 

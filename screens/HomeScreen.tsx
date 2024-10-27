@@ -64,16 +64,27 @@ interface Props {
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [visibleScreen, setVisibleScreen] = useState("Home");
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const userIdRef = useRef(userId);
+  const userEmailRef = useRef(userEmail);
+  const formattedEmail = (email: string) => `${email.split("@")[0]}@`;
+
+  console.log("EMAAIL", userEmail);
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("USER DETAILS", user);
       if (user) {
         setUserId(() => {
           const newUserId = user.uid;
           userIdRef.current = newUserId;
           return newUserId;
+        });
+        setUserEmail(() => {
+          const newUserEmail = user.email;
+          userEmailRef.current = newUserEmail;
+          return newUserEmail;
         });
       }
     });
@@ -95,7 +106,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         ) : visibleScreen === "Profile" ? (
           <Profile />
         ) : visibleScreen === "Chat" ? ( // New Chat screen rendering
-          <Forum userId={userIdRef.current ?? ""} /> // Pass userId here
+          <Forum userId={formattedEmail(userEmailRef.current ?? "")} /> // Pass userId here
         ) : (
           <PronunciationGuide />
         )}
