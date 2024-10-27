@@ -46,10 +46,16 @@ const messageSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 });
 
+const videoSchema = new mongoose.Schema({
+  title: String,
+  videoId: String,
+});
+
 // Create models
 const Quiz = mongoose.model("Quiz", quizSchema);
 const Progress = mongoose.model("Progress", progressSchema);
 const Message = mongoose.model("Message", messageSchema);
+const Video = mongoose.model("Video", videoSchema);
 
 // Fetch quiz data API
 app.get("/api/quiz", async (req: Request, res: Response) => {
@@ -68,8 +74,15 @@ app.get("/api/quiz", async (req: Request, res: Response) => {
 
 // Save progress API
 app.post("/api/saveProgress", async (req: Request, res: Response) => {
-  const { userId, moduleId, videoId, timeSpent, completed, quizResults } =
-    req.body;
+  const {
+    userId,
+    moduleId,
+    videoId,
+    timeSpent,
+    videoName,
+    completed,
+    quizResults,
+  } = req.body;
   try {
     const existingProgress = await Progress.findOne({
       userId,
@@ -94,6 +107,7 @@ app.post("/api/saveProgress", async (req: Request, res: Response) => {
         userId,
         moduleId,
         videoId,
+        videoName,
         timeSpent,
         completed,
         quizResults,
@@ -131,6 +145,36 @@ app.get("/api/messages", async (req: Request, res: Response) => {
     res.status(500).send("Error fetching messages.");
   }
 });
+
+// Fetch all videos API
+app.get("/api/videos", async (req: Request, res: Response) => {
+  try {
+    const videos = await Video.find();
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+    res.status(500).send("Error fetching videos.");
+  }
+});
+
+// Seeding
+// app.get("/api/seed-videos", async (req: Request, res: Response) => {
+//   try {
+//     const videos = [
+//       { id: "1", title: "English Beginner", videoId: "0MyUBkgrvqU" },
+//       { id: "2", title: "English Advance", videoId: "uLN6IdRtDhg" },
+//       { id: "3", title: "Spanish Beginner", videoId: "DAp_v7EH9AA" },
+//       { id: "4", title: "Spanish Advance", videoId: "C7B0WeZNu4I" },
+//       { id: "5", title: "French Beginner", videoId: "ujDtm0hZyII" },
+//       { id: "6", title: "French Advance", videoId: "eUBuIJuKptw" },
+//     ];
+//     await Video.insertMany(videos);
+//     res.status(201).send("Videos seeded successfully.");
+//   } catch (error) {
+//     console.error("Error seeding videos:", error);
+//     res.status(500).send("Error seeding videos.");
+//   }
+// });
 
 // Initialize HTTP server and WebSocket
 const server = http.createServer(app);

@@ -1,27 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import YoutubePlayerView from "../components/home/YoutubePlayerView";
 
 interface Video {
-  id: string;
+  _id: string;
   title: string;
   videoId: string;
 }
 
 const HomePage: React.FC = () => {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [numColumns, setNumColumns] = useState<number>(1); // State for numColumns
 
-  const videos: Video[] = [
-    { id: "1", title: "How to Learn a Language Fast", videoId: "zOIr3WNaTVY" },
-    { id: "2", title: "5 Language Learning Tips", videoId: "Rj8bxm0fERw" },
-    // Add more videos...
-  ];
+  // Fetch videos from the server
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const response = await fetch("http://192.168.1.3:3000/api/videos");
+        const data = await response.json();
+        setVideos(data);
+      } catch (error) {
+        console.error("Error fetching videos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVideos();
+  }, []);
+
+  // Get title of the selected video
+  const selectedVideoTitle =
+    videos.find((video) => video.videoId === selectedVideoId)?.title || "";
 
   const renderItem = ({ item }: { item: Video }) => (
     <TouchableOpacity
@@ -34,19 +52,22 @@ const HomePage: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {selectedVideoId ? (
+      {loading ? (
+        <ActivityIndicator size="large" color="#00ff00" />
+      ) : selectedVideoId ? (
         <YoutubePlayerView
           selectedVideoId={selectedVideoId}
+          selectedVideoTitle={selectedVideoTitle}
           setSelectedVideoId={setSelectedVideoId}
         />
       ) : (
         <FlatList
           data={videos}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
+          keyExtractor={(item) => item._id}
+          numColumns={numColumns} // Use numColumns state here
           contentContainerStyle={styles.gridContainer}
+          key={numColumns} // Add key prop based on numColumns
         />
       )}
     </View>
@@ -57,31 +78,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "black",
-    padding: 10,
+    padding: 20,
+    marginTop: 20,
   },
   item: {
-    flex: 1,
-    padding: 20,
-    margin: 10,
+    padding: 25,
+    marginVertical: 10, // Adjusted margin for vertical spacing
     backgroundColor: "#f9f9f9",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: "center",
-    color: "black",
-  },
-  backButton: {
-    marginBottom: 10,
-  },
-  backIcon: {
-    width: 30,
-    height: 30,
-  },
-  row: {
-    justifyContent: "space-between",
+    fontWeight: "bold",
+    color: "#333",
   },
   gridContainer: {
     flexGrow: 1,

@@ -168,7 +168,7 @@ export default function PronunciationGuide() {
   return (
     <ScrollView style={styles.container}>
       <Text id="PronunciationGuide" style={styles.title}>
-        Pronunciation Guide
+        Guide
       </Text>
 
       <View style={styles.buttonContainer}>

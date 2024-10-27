@@ -21,7 +21,7 @@ const fetchUserProgress = async (actualUserId: string) => {
 
 const UserProgressComponent: React.FC<{ userId: string }> = ({ userId }) => {
   const [progressData, setProgressData] = useState<any[]>([]);
-
+  console.log("progressData", progressData);
   useEffect(() => {
     const loadUserProgress = async () => {
       const data = await fetchUserProgress(userId);
@@ -34,7 +34,12 @@ const UserProgressComponent: React.FC<{ userId: string }> = ({ userId }) => {
   }, [userId]);
 
   const chartData = {
-    labels: progressData.map((item) => item.videoName),
+    labels: progressData.map(
+      (item) =>
+        `${item.videoName.split(" ")[0]} ${
+          item.videoName.split(" ")[1] === "Advance" ? "A" : "B"
+        }`
+    ),
     datasets: [
       {
         data: progressData.map((item) => item.timeSpent),

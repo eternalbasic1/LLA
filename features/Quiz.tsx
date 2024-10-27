@@ -1,51 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 
-interface QuizProps {
-  videoId: keyof typeof quizData; // Use keyof to restrict the type to keys in quizData
+interface Question {
+  question: string;
+  options: string[];
+  correctAnswer: string;
 }
 
-const quizData = {
-  zOIr3WNaTVY: [
-    {
-      question: "What is the fastest way to learn a language?",
-      options: [
-        "Practice daily",
-        "Memorize vocabulary",
-        "Ignore grammar",
-        "Speak to a native",
-      ],
-      correctAnswer: "Speak to a native",
-    },
-    {
-      question: "How much time should you spend learning a new language daily?",
-      options: ["1 hour", "10 minutes", "2 hours", "30 minutes"],
-      correctAnswer: "30 minutes",
-    },
-  ],
-  Rj8bxm0fERw: [
-    {
-      question: "What is the best way to improve listening skills?",
-      options: ["Watch movies", "Read books", "Speak more", "Write essays"],
-      correctAnswer: "Watch movies",
-    },
-    // More questions for other videos...
-  ],
-};
+interface QuizProps {
+  videoId: string;
+}
 
 const Quiz: React.FC<QuizProps> = ({ videoId }) => {
+  const [quiz, setQuiz] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [loading, setLoading] = useState(true);
+  console.log("QUIXXX", quiz);
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        const response = await fetch(
+          `http://192.168.1.3:3000/api/quiz/${videoId}`
+        );
+        const data = await response.json();
+        setQuiz(data.questions);
+      } catch (error) {
+        console.error("Error fetching quiz:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const currentQuiz = quizData[videoId]; // Now videoId is correctly typed
-  const currentQuestion = currentQuiz[currentQuestionIndex];
+    fetchQuiz();
+  }, [videoId]);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#00ff00" />;
+  }
+
+  if (quiz.length === 0) {
+    return (
+      <Text style={{ color: "white" }}>No quiz available for this video.</Text>
+    );
+  }
+
+  const currentQuestion = quiz[currentQuestionIndex];
 
   const handleAnswer = (answer: string) => {
     setSelectedAnswer(answer);
@@ -55,24 +63,12 @@ const Quiz: React.FC<QuizProps> = ({ videoId }) => {
   const nextQuestion = () => {
     setShowAnswer(false);
     setSelectedAnswer(null);
-    setCurrentQuestionIndex(
-      (prevIndex) => (prevIndex + 1) % currentQuiz.length
-    );
+    setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % quiz.length);
   };
 
   return (
     <ScrollView>
-      <Text
-        style={{
-          color: "white",
-          fontWeight: "bold",
-          fontSize: 25,
-          marginHorizontal: 20,
-          marginBottom: 20,
-        }}
-      >
-        Quiz Time
-      </Text>
+      <Text style={styles.heading}>Quiz Time</Text>
       <View style={styles.quizContainer}>
         <Text style={styles.question}>{currentQuestion.question}</Text>
         {currentQuestion.options.map((option) => (
@@ -105,6 +101,13 @@ const Quiz: React.FC<QuizProps> = ({ videoId }) => {
 };
 
 const styles = StyleSheet.create({
+  heading: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 25,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
   quizContainer: {
     padding: 20,
     backgroundColor: "#333",
