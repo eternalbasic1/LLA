@@ -6,10 +6,49 @@ import {
   Image,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
-import Quiz from "../../features/Quiz";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+const funFactsList = {
+  english: [
+    "🌎 There are over 7,000 languages spoken worldwide! Imagine all the ways people say 'hello'! 🌎",
+    "🔥 The longest word in English has 189,819 letters! It's the chemical name for a protein. 🔥",
+    "🎨 Did you know? English borrows words from over 350 different languages! 🎨",
+    "🧠 Learning new languages can increase your brain size and improve memory! 🧠",
+    "💬 Shakespeare invented over 1,700 words in English. Ever heard of 'bedazzled'? 💬",
+    "🚀 Bilingual people can switch tasks faster! It’s like a superpower for the brain! 🚀",
+    "✨ English is the most widely spoken language as a second language in the world. ✨",
+    "🌐 The word 'robot' comes from the Czech word 'robota', meaning 'forced labor'! 🌐",
+    "📜 The most translated book in the world is the Bible, available in over 3,000 languages! 📜",
+    "🎉 Knowing a second language can help you think more creatively and make better decisions! 🎉",
+  ],
+  spanish: [
+    "🌎 ¡En el mundo se hablan más de 7,000 idiomas! ¡Imagina cuántas maneras hay de decir 'hola'! 🌎",
+    "🔥 La palabra más larga en español tiene 23 letras: 'anticonstitucionalmente'. 🔥",
+    "🎨 ¿Sabías que? El español proviene del latín, como el italiano y el portugués. 🎨",
+    "🧠 Aprender nuevos idiomas puede aumentar el tamaño del cerebro y mejorar la memoria. 🧠",
+    "💬 En español, la letra más común es la 'e'. ¡Intenta escribir sin usarla! 💬",
+    "🚀 Las personas bilingües cambian de tareas más rápido. ¡Es como un superpoder! 🚀",
+    "✨ El español es el idioma oficial en 21 países. ¡Es el segundo idioma más hablado en el mundo! ✨",
+    "🌐 La palabra 'robot' viene del checo 'robota', que significa 'trabajo forzado'. 🌐",
+    "📜 El libro más traducido del mundo es la Biblia, disponible en más de 3,000 idiomas. 📜",
+    "🎉 Conocer un segundo idioma puede ayudarte a pensar más creativamente y tomar mejores decisiones. 🎉",
+  ],
+  french: [
+    "🌎 Il y a plus de 7 000 langues parlées dans le monde ! Imaginez toutes les façons de dire 'bonjour' ! 🌎",
+    "🔥 Le mot le plus long en français est 'anticonstitutionnellement' avec 25 lettres. 🔥",
+    "🎨 Saviez-vous ? Le français est une langue latine comme l'italien et l'espagnol. 🎨",
+    "🧠 Apprendre de nouvelles langues peut augmenter la taille du cerveau et améliorer la mémoire. 🧠",
+    "💬 En français, la lettre la plus fréquente est le 'e'. Essayez d'écrire sans l'utiliser ! 💬",
+    "🚀 Les personnes bilingues passent plus vite d'une tâche à l'autre ! 🚀",
+    "✨ Le français est parlé comme langue officielle dans 29 pays. 🌍",
+    "🌐 Le mot 'robot' vient du tchèque 'robota', qui signifie 'travail forcé'. 🌐",
+    "📜 Le livre le plus traduit au monde est la Bible, disponible en plus de 3 000 langues. 📜",
+    "🎉 Connaître une seconde langue peut aider à penser plus créativement et à mieux décider. 🎉",
+  ],
+};
 
 interface YoutubePlayerViewProps {
   setSelectedVideoId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -24,20 +63,35 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
 }) => {
   const [timeSpent, setTimeSpent] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [crazyContent, setCrazyContent] = useState("");
   const timeSpentRef = useRef(timeSpent);
   const userIdRef = useRef(userId);
-  const [isPlaying, setIsPlaying] = useState(false);
-  console.log("selectedVideoTitle", selectedVideoTitle);
+
+  // Determine the content list based on the video title
+  const getContentListByLanguage = () => {
+    if (selectedVideoTitle.includes("English")) return funFactsList.english;
+    if (selectedVideoTitle.includes("Spanish")) return funFactsList.spanish;
+    if (selectedVideoTitle.includes("French")) return funFactsList.french;
+    return []; // Default if no match
+  };
+
+  const changeCrazyContent = () => {
+    const contentList = getContentListByLanguage();
+    const randomIndex = Math.floor(Math.random() * contentList.length);
+    setCrazyContent(contentList[randomIndex]);
+  };
+
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUserId(() => {
-          const newUserId = user.uid;
-          userIdRef.current = newUserId;
-          return newUserId;
-        });
+        const newUserId = user.uid;
+        setUserId(newUserId);
+        userIdRef.current = newUserId;
       }
+      setLoading(false);
     });
 
     const interval = setInterval(() => {
@@ -47,6 +101,9 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
         return newTimeSpent;
       });
     }, 1000);
+
+    // Set initial crazy content
+    changeCrazyContent();
 
     return () => {
       unsubscribe();
@@ -99,9 +156,17 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
+
   return (
-    <ScrollView>
-      <View style={{ marginBottom: 100 }}>
+    <ScrollView contentContainerStyle={styles.scrollView}>
+      <View style={styles.container}>
         <TouchableOpacity
           onPress={() => setSelectedVideoId(null)}
           style={styles.backButton}
@@ -126,7 +191,17 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
             }
           }}
         />
-        {/* {selectedVideoId && <Quiz videoId={selectedVideoId} />} */}
+
+        {/* Crazy Content Section */}
+        <View style={styles.crazyContentContainer}>
+          <Text style={styles.crazyContentText}>{crazyContent}</Text>
+          <TouchableOpacity
+            style={styles.changeContentButton}
+            onPress={changeCrazyContent}
+          >
+            <Text style={styles.buttonText}>✨ Change Content! ✨</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -138,25 +213,22 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
     padding: 10,
   },
-  item: {
-    flex: 1,
-    padding: 20,
-    margin: 10,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 8,
+  scrollView: {
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
   },
   videoTitle: {
     fontSize: 18,
     color: "white",
     textAlign: "center",
     marginVertical: 10,
-  },
-  title: {
-    fontSize: 16,
-    textAlign: "center",
-    color: "black",
   },
   backButton: {
     marginBottom: 10,
@@ -165,11 +237,29 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
   },
-  row: {
-    justifyContent: "space-between",
+  crazyContentContainer: {
+    marginTop: 20,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: "#FF00FF",
+    borderRadius: 10,
+    backgroundColor: "#222",
+    alignItems: "center",
   },
-  gridContainer: {
-    flexGrow: 1,
+  crazyContentText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  changeContentButton: {
+    padding: 10,
+    backgroundColor: "#FF00FF",
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
 });
 
