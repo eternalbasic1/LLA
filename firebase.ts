@@ -8,16 +8,26 @@ import {
 } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
+import Constants from "expo-constants";
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyD1v4dfhoORhOmR_sepK929URLPLnvPQcc",
-  authDomain: "rnative-instagram-clone.firebaseapp.com",
-  projectId: "rnative-instagram-clone",
-  storageBucket: "rnative-instagram-clone.appspot.com",
-  messagingSenderId: "586711367775",
-  appId: "1:586711367775:web:09b2b48c3ff3cfe3085bea",
+const cleanData = (data) => {
+  const cleanedData = {};
+  for (const key in data) {
+    // Remove surrounding quotes and trailing commas
+    cleanedData[key] = data[key].replace(/^"|"|,$/g, "");
+  }
+  return cleanedData;
 };
+
+const firebaseConfigConstant = {
+  apiKey: Constants.expoConfig.extra.apiKey,
+  authDomain: Constants.expoConfig.extra.authDomain,
+  projectId: Constants.expoConfig.extra.projectId,
+  storageBucket: Constants.expoConfig.extra.storageBucket,
+  messagingSenderId: Constants.expoConfig.extra.messagingSenderId,
+  appId: Constants.expoConfig.extra.appId,
+};
+const firebaseConfig = cleanData(firebaseConfigConstant);
 
 // Initialize Firebase App and Auth
 let app, auth, db;
