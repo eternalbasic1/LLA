@@ -119,21 +119,24 @@ const UserProgressComponent: React.FC<{ userId: string }> = ({ userId }) => {
           <Text style={styles.noDataText}>No progress data available.</Text>
         )}
       </ScrollView>
-
-      <Text style={styles.title}>Quiz Progress</Text>
       <View style={{ marginBottom: 100 }}>
-        <PieChart
-          data={quizChartData}
-          width={Dimensions.get("window").width - 40}
-          height={220}
-          chartConfig={{
-            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-          }}
-          accessor="count"
-          backgroundColor="transparent"
-          paddingLeft="15"
-          absolute
-        />
+        <Text style={styles.title}>Quiz Progress</Text>
+        {quizProgressData.length > 0 ? (
+          <PieChart
+            data={quizChartData}
+            width={Dimensions.get("window").width - 40}
+            height={220}
+            chartConfig={{
+              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            }}
+            accessor="count"
+            backgroundColor="transparent"
+            paddingLeft="15"
+            absolute
+          />
+        ) : (
+          <Text style={styles.noDataText}>No quiz attempts made.</Text>
+        )}
       </View>
     </ScrollView>
   );

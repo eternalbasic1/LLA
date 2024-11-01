@@ -174,9 +174,6 @@ app.get("/api/progress/:userId", async (req: Request, res: Response) => {
   const { userId } = req.params;
   try {
     const progressRecords = await Progress.find({ userId });
-    if (progressRecords.length === 0) {
-      return res.status(404).send("No progress records found for this user.");
-    }
     res.status(200).json(progressRecords);
   } catch (error) {
     console.error("Error fetching progress:", error);
