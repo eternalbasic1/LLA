@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,23 +7,23 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
   StyleProp,
-  ViewStyle, // Import StyleProp and ViewStyle
+  ViewStyle,
 } from "react-native";
 import {
   getAuth,
   signInWithEmailAndPassword,
   setPersistence,
   getReactNativePersistence,
-} from "firebase/auth"; // Use the correct imports
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
+} from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import Validator from "email-validator";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../navigation"; // Adjust this import as necessary
+import { RootStackParamList } from "../../navigation";
 
-// Define navigation prop type
 type LoginScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   "LoginScreen"
@@ -35,37 +35,41 @@ interface Props {
 
 const auth = getAuth();
 
-// Set persistence to AsyncStorage
 setPersistence(auth, getReactNativePersistence(AsyncStorage))
-  .then(() => {
-    // Successfully set persistence
-  })
+  .then(() => {})
   .catch((error) => {
     console.error("Error setting persistence:", error);
   });
 
 const LoginForm: React.FC<Props> = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
+
   const LoginFormSchema = Yup.object().shape({
-    email: Yup.string().email().required("An email is required"),
+    email: Yup.string()
+      .email("Enter a valid email")
+      .required("Email is required"),
     password: Yup.string()
-      .required("Your password has to have at least 6 characters")
-      .min(6),
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
   });
 
   const onLogin = async (email: string, password: string) => {
+    setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      console.log("🔥 Firebase login successful", email, password);
+      console.log("🔥 Firebase login successful", email);
+      Alert.alert("Login Successful", "Welcome back!");
     } catch (error: any) {
       console.log(error.message);
       Alert.alert("Login Error", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Update the buttonStyle function to ensure proper typing
   const buttonStyle = (isValid: boolean): StyleProp<ViewStyle> => ({
-    backgroundColor: isValid ? "#0096F6" : "#9ACAF7",
-    alignItems: "center" as const, // Ensure this is correctly typed
+    backgroundColor: isValid ? "#000" : "#ccc",
+    alignItems: "center",
     justifyContent: "center",
     minHeight: 42,
     borderRadius: 4,
@@ -75,13 +79,18 @@ const LoginForm: React.FC<Props> = ({ navigation }) => {
     <View style={styles.wrapper}>
       <Formik
         initialValues={{ email: "", password: "" }}
-        onSubmit={(values) => {
-          onLogin(values.email, values.password);
-        }}
+        onSubmit={(values) => onLogin(values.email, values.password)}
         validationSchema={LoginFormSchema}
-        validateOnMount={true}
+        validateOnMount
       >
-        {({ handleChange, handleBlur, handleSubmit, values, isValid }) => (
+        {({
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          values,
+          isValid,
+          setFieldTouched,
+        }) => (
           <>
             <View
               style={[
@@ -89,63 +98,82 @@ const LoginForm: React.FC<Props> = ({ navigation }) => {
                 {
                   borderColor:
                     values.email.length < 1 || Validator.validate(values.email)
-                      ? "#ccc"
-                      : "red",
+                      ? "#000"
+                      : "gray",
                 },
               ]}
             >
               <TextInput
-                placeholderTextColor="#444"
                 placeholder="Phone Number, Username, or Email"
+                placeholderTextColor="#666"
                 autoCapitalize="none"
                 keyboardType="email-address"
                 textContentType="emailAddress"
-                autoFocus={true}
-                onChangeText={handleChange("email")}
+                autoFocus
+                accessibilityLabel="Email input"
+                accessibilityHint="Enter your email address"
+                onChangeText={(text) => {
+                  handleChange("email")(text);
+                  setFieldTouched("email", true, true);
+                }}
                 onBlur={handleBlur("email")}
                 value={values.email}
+                returnKeyType="next"
+                onSubmitEditing={() => setFieldTouched("password", true)}
               />
             </View>
             <View
               style={[
                 styles.inputField,
                 {
-                  borderColor:
-                    values.password.length < 1 || values.password.length >= 6
-                      ? "#ccc"
-                      : "red",
+                  borderColor: values.password.length >= 6 ? "#000" : "gray",
                 },
               ]}
             >
               <TextInput
-                placeholderTextColor="#444"
                 placeholder="Password"
+                placeholderTextColor="#666"
                 autoCapitalize="none"
                 autoCorrect={false}
-                secureTextEntry={true}
+                secureTextEntry
                 textContentType="password"
+                accessibilityLabel="Password input"
+                accessibilityHint="Enter your password"
                 onChangeText={handleChange("password")}
                 onBlur={handleBlur("password")}
                 value={values.password}
               />
             </View>
-            <View style={{ alignItems: "flex-end", marginBottom: 20 }}>
-              <Text style={{ color: "#6BB0F5" }}>Forgot Password?</Text>
+            <View style={styles.forgotPasswordContainer}>
+              <TouchableOpacity
+                onPress={() =>
+                  Alert.alert(
+                    "Forgot Password",
+                    "Reset instructions sent to email"
+                  )
+                }
+              >
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
             </View>
             <Pressable
               style={({ pressed }) => [
                 buttonStyle(isValid),
-                pressed && { opacity: 0.5 }, // Optional: Add pressed state effect
+                pressed && { opacity: 0.8 },
               ]}
               onPress={handleSubmit as () => void}
-              disabled={!isValid}
+              disabled={!isValid || loading}
             >
-              <Text style={styles.buttonText}>Log in</Text>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Log in</Text>
+              )}
             </Pressable>
             <View style={styles.signupContainer}>
               <Text>Don't have an account?</Text>
               <TouchableOpacity onPress={() => navigation.push("SignupScreen")}>
-                <Text style={{ color: "#6BB0F5" }}> SignUp</Text>
+                <Text style={styles.signupText}> Sign Up</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -158,24 +186,37 @@ const LoginForm: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     marginTop: 80,
+    paddingHorizontal: 16,
+    backgroundColor: "#fff", // Background in white for contrast
   },
   inputField: {
     borderRadius: 4,
-    padding: 8,
-    backgroundColor: "#FAFAFA",
+    padding: 12,
+    backgroundColor: "#f8f8f8", // Light gray background
     marginBottom: 10,
     borderWidth: 1,
   },
+  forgotPasswordContainer: {
+    alignItems: "flex-end",
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
+    color: "#000", // Black text
+    fontWeight: "600",
+  },
   buttonText: {
     fontWeight: "600",
-    color: "#fff",
+    color: "#fff", // White text on black button
     fontSize: 17,
   },
   signupContainer: {
     flexDirection: "row",
-    width: "100%",
     justifyContent: "center",
     marginTop: 50,
+  },
+  signupText: {
+    color: "#000", // Black text for consistency
+    fontWeight: "600",
   },
 });
 

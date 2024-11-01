@@ -18,8 +18,6 @@ import {
   setDoc,
   doc,
 } from "../../firebase"; // Adjust the path as needed
-
-// Define navigation prop types
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation";
 
@@ -34,11 +32,15 @@ interface Props {
 
 const SignupForm: React.FC<Props> = ({ navigation }) => {
   const SignupFormSchema = Yup.object().shape({
-    email: Yup.string().email().required("An email is required"),
-    username: Yup.string().required().min(2, "A username is required"),
+    email: Yup.string()
+      .email("Enter a valid email")
+      .required("Email is required"),
+    username: Yup.string()
+      .min(2, "A username is required")
+      .required("Username is required"),
     password: Yup.string()
-      .required()
-      .min(6, "Your password has to have at least 6 characters"),
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
   });
 
   const getRandomProfilePicture = async () => {
@@ -58,44 +60,30 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
         email,
         password
       );
-      console.log("Firebase user created successfully", email, password);
-
-      // await setDoc(doc(db, "users", authUser.user.email), {
-      //   owner_uid: authUser.user.uid,
-      //   username: username,
-      //   email: authUser.user.email,
-      //   profile_picture: await getRandomProfilePicture(),
-      // });
-
-      if (authUser.user.email) {
-        await setDoc(doc(db, "users", authUser.user.email), {
-          owner_uid: authUser.user.uid,
-          username: username,
-          email: authUser.user.email,
-          profile_picture: await getRandomProfilePicture(),
-        });
-      }
-
+      console.log("Firebase user created successfully", email);
+      await setDoc(doc(db, "users", authUser.user.email), {
+        owner_uid: authUser.user.uid,
+        username: username,
+        email: authUser.user.email,
+        profile_picture: await getRandomProfilePicture(),
+      });
       console.log("User document written");
+      Alert.alert("Signup Successful", "Welcome to the app!");
     } catch (error: any) {
       console.log(error.message);
-      Alert.alert(error.message);
+      Alert.alert("Signup Error", error.message);
     }
   };
 
   return (
     <View style={styles.wrapper}>
       <Formik
-        initialValues={{
-          email: "test2@gmail.com",
-          username: "test123",
-          password: "1234567",
-        }}
-        onSubmit={(values) => {
-          onSignup(values.email, values.password, values.username);
-        }}
+        initialValues={{ email: "", username: "", password: "" }}
+        onSubmit={(values) =>
+          onSignup(values.email, values.password, values.username)
+        }
         validationSchema={SignupFormSchema}
-        validateOnMount={true}
+        validateOnMount
       >
         {({ handleChange, handleBlur, handleSubmit, values, isValid }) => (
           <>
@@ -105,17 +93,16 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
                 {
                   borderColor:
                     values.email.length < 1 || Validator.validate(values.email)
-                      ? "#ccc"
-                      : "red",
+                      ? "#000"
+                      : "gray",
                 },
               ]}
             >
               <TextInput
-                placeholderTextColor="#444"
                 placeholder="Email"
+                placeholderTextColor="#666"
                 autoCapitalize="none"
                 keyboardType="email-address"
-                autoFocus={true}
                 onChangeText={handleChange("email")}
                 onBlur={handleBlur("email")}
                 value={values.email}
@@ -125,18 +112,14 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
               style={[
                 styles.inputField,
                 {
-                  borderColor:
-                    values.username.length < 1 || values.username.length >= 6
-                      ? "#ccc"
-                      : "red",
+                  borderColor: values.username.length >= 2 ? "#000" : "gray",
                 },
               ]}
             >
               <TextInput
-                placeholderTextColor="#444"
                 placeholder="Username"
+                placeholderTextColor="#666"
                 autoCapitalize="none"
-                textContentType="username"
                 onChangeText={handleChange("username")}
                 onBlur={handleBlur("username")}
                 value={values.username}
@@ -146,32 +129,27 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
               style={[
                 styles.inputField,
                 {
-                  borderColor:
-                    values.password.length < 1 || values.password.length >= 6
-                      ? "#ccc"
-                      : "red",
+                  borderColor: values.password.length >= 6 ? "#000" : "gray",
                 },
               ]}
             >
               <TextInput
-                placeholderTextColor="#444"
                 placeholder="Password"
+                placeholderTextColor="#666"
                 autoCapitalize="none"
-                secureTextEntry={true}
-                textContentType="password"
+                secureTextEntry
                 onChangeText={handleChange("password")}
                 onBlur={handleBlur("password")}
                 value={values.password}
               />
             </View>
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.button,
-                {
-                  backgroundColor: isValid ? "#0096F6" : "#9ACAF7",
-                },
+                { backgroundColor: isValid ? "#000" : "#ccc" },
+                pressed && { opacity: 0.8 },
               ]}
-              onPress={() => handleSubmit()} // No type casting needed
+              onPress={() => handleSubmit()}
               disabled={!isValid}
             >
               <Text style={styles.buttonText}>Sign Up</Text>
@@ -179,7 +157,7 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
             <View style={styles.loginContainer}>
               <Text>Already have an account?</Text>
               <TouchableOpacity onPress={() => navigation.push("LoginScreen")}>
-                <Text style={{ color: "#6BB0F5" }}> Log In</Text>
+                <Text style={styles.loginText}> Log In</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -192,11 +170,13 @@ const SignupForm: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     marginTop: 80,
+    paddingHorizontal: 16,
+    backgroundColor: "#fff",
   },
   inputField: {
     borderRadius: 4,
-    padding: 8,
-    backgroundColor: "#FAFAFA",
+    padding: 12,
+    backgroundColor: "#f8f8f8",
     marginBottom: 10,
     borderWidth: 1,
   },
@@ -213,9 +193,12 @@ const styles = StyleSheet.create({
   },
   loginContainer: {
     flexDirection: "row",
-    width: "100%",
     justifyContent: "center",
     marginTop: 50,
+  },
+  loginText: {
+    color: "#000",
+    fontWeight: "600",
   },
 });
 
