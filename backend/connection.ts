@@ -9,6 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
+//TODO: Niharika please change this userProgress to LLA or any relevant name
 mongoose.connect("mongodb://localhost:27017/userProgress");
 
 // Define schema for quiz
