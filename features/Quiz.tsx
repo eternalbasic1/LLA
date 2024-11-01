@@ -29,7 +29,7 @@ const Quiz: React.FC<QuizProps> = ({ videoId }) => {
     const fetchQuiz = async () => {
       try {
         const response = await fetch(
-          `http://192.168.1.15:3000/api/quiz/${videoId}`
+          `http://192.168.1.5:3000/api/quiz/${videoId}`
         );
         const data = await response.json();
         setQuiz(data.questions);

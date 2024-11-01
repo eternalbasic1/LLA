@@ -21,7 +21,7 @@ interface Message {
   text: string;
 }
 
-const socket: Socket = io("http://192.168.1.15:3000");
+const socket: Socket = io("http://192.168.1.5:3000");
 
 interface Props {
   userId: string;
@@ -36,7 +36,7 @@ const Forum: React.FC<Props> = ({ userId }) => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get<Message[]>(
-          "http://192.168.1.15:3000/api/messages"
+          "http://192.168.1.5:3000/api/messages"
         );
         setMessages(response.data);
       } catch (error) {

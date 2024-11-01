@@ -5,7 +5,7 @@ import { BarChart, PieChart } from "react-native-chart-kit";
 const fetchUserProgress = async (actualUserId: string) => {
   try {
     const response = await fetch(
-      `http://192.168.1.15:3000/api/progress/${actualUserId}`
+      `http://192.168.1.5:3000/api/progress/${actualUserId}`
     );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -20,7 +20,7 @@ const fetchUserProgress = async (actualUserId: string) => {
 const fetchQuizProgress = async (userId: string) => {
   try {
     const response = await fetch(
-      `http://192.168.1.15:3000/api/getQuizProgress/${userId}`
+      `http://192.168.1.5:3000/api/getQuizProgress/${userId}`
     );
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const quizProgressData = await response.json();

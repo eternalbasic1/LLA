@@ -7,15 +7,21 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ViewStyle,
-  TextStyle,
+  StyleProp,
+  ViewStyle, // Import StyleProp and ViewStyle
 } from "react-native";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  setPersistence,
+  getReactNativePersistence,
+} from "firebase/auth"; // Use the correct imports
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 import { Formik } from "formik";
 import * as Yup from "yup";
 import Validator from "email-validator";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../navigation";
+import { RootStackParamList } from "../../navigation"; // Adjust this import as necessary
 
 // Define navigation prop type
 type LoginScreenNavigationProp = StackNavigationProp<
@@ -28,6 +34,15 @@ interface Props {
 }
 
 const auth = getAuth();
+
+// Set persistence to AsyncStorage
+setPersistence(auth, getReactNativePersistence(AsyncStorage))
+  .then(() => {
+    // Successfully set persistence
+  })
+  .catch((error) => {
+    console.error("Error setting persistence:", error);
+  });
 
 const LoginForm: React.FC<Props> = ({ navigation }) => {
   const LoginFormSchema = Yup.object().shape({
@@ -47,9 +62,10 @@ const LoginForm: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const buttonStyle = (isValid: boolean): ViewStyle => ({
+  // Update the buttonStyle function to ensure proper typing
+  const buttonStyle = (isValid: boolean): StyleProp<ViewStyle> => ({
     backgroundColor: isValid ? "#0096F6" : "#9ACAF7",
-    alignItems: "center",
+    alignItems: "center" as const, // Ensure this is correctly typed
     justifyContent: "center",
     minHeight: 42,
     borderRadius: 4,
@@ -117,7 +133,10 @@ const LoginForm: React.FC<Props> = ({ navigation }) => {
               <Text style={{ color: "#6BB0F5" }}>Forgot Password?</Text>
             </View>
             <Pressable
-              style={() => buttonStyle(isValid)}
+              style={({ pressed }) => [
+                buttonStyle(isValid),
+                pressed && { opacity: 0.5 }, // Optional: Add pressed state effect
+              ]}
               onPress={handleSubmit as () => void}
               disabled={!isValid}
             >
