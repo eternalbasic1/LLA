@@ -129,21 +129,24 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
     actualUserId: string;
   }) => {
     try {
-      const response = await fetch("http://192.168.1.3:3000/api/saveProgress", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: actualUserId,
-          moduleId: "module123",
-          videoId,
-          videoName,
-          timeSpent: totalTimeSpent,
-          completed: true,
-          quizResults: [],
-        }),
-      });
+      const response = await fetch(
+        "http://192.168.1.15:3000/api/saveProgress",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: actualUserId,
+            moduleId: "module123",
+            videoId,
+            videoName,
+            timeSpent: totalTimeSpent,
+            completed: true,
+            quizResults: [],
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

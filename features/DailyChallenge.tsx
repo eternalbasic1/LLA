@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Button,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -14,6 +13,7 @@ interface Answer {
 }
 
 interface Question {
+  _id: string; // Add _id to uniquely identify each question
   questionText: string;
   answers: Answer[];
   correctAnswerId: number;
@@ -24,21 +24,53 @@ interface Quiz {
   questions: Question[];
 }
 
-export default function DailyChallenge() {
+interface DailyChallengeProps {
+  userId: string;
+}
+export default function DailyChallenge({ userId }: DailyChallengeProps) {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://192.168.1.3:3000/api/quiz")
+    fetch("http://192.168.1.15:3000/api/quiz")
       .then((res) => res.json())
       .then((data) => setQuizzes(data));
   }, []);
 
   const handleAnswerSelect = (answerId: number) => {
     setSelectedAnswer(answerId);
+  };
+
+  const handleSubmit = async () => {
+    if (selectedQuiz) {
+      const currentQuestion = selectedQuiz.questions[currentQuestionIndex];
+      const isCorrect = selectedAnswer === currentQuestion.correctAnswerId;
+
+      // Save quiz progress with questionId from MongoDB
+      try {
+        await fetch("http://192.168.1.15:3000/api/saveQuizProgress", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userId, // Replace with actual user ID
+            questionId: currentQuestion._id, // Use unique question _id from MongoDB
+            result: isCorrect,
+          }),
+        });
+
+        setFeedback(isCorrect ? "Correct!" : "Incorrect!");
+      } catch (error) {
+        console.error("Error saving quiz progress:", error);
+      }
+
+      setIsSubmitted(true);
+    }
   };
 
   const handleNextQuestion = () => {
@@ -49,11 +81,8 @@ export default function DailyChallenge() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setIsSubmitted(false);
+      setFeedback(null);
     }
-  };
-
-  const handleSubmit = () => {
-    setIsSubmitted(true);
   };
 
   const handleQuizSelect = (quiz: Quiz) => {
@@ -61,13 +90,15 @@ export default function DailyChallenge() {
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setIsSubmitted(false);
+    setFeedback(null);
   };
 
   const handleCompleteQuiz = () => {
-    setSelectedQuiz(null); // Reset selected quiz to show the quiz selection page
+    setSelectedQuiz(null);
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setIsSubmitted(false);
+    setFeedback(null);
   };
 
   if (!selectedQuiz) {
@@ -117,18 +148,15 @@ export default function DailyChallenge() {
         <Text
           style={[
             styles.feedbackText,
-            selectedAnswer === currentQuestion.correctAnswerId
+            feedback === "Correct!"
               ? styles.correctAnswer
               : styles.incorrectAnswer,
           ]}
         >
-          {selectedAnswer === currentQuestion.correctAnswerId
-            ? "Correct!"
-            : "Incorrect!"}
+          {feedback}
         </Text>
       )}
 
-      {/* Show Complete button if it's the last question */}
       {isSubmitted &&
       currentQuestionIndex === selectedQuiz.questions.length - 1 ? (
         <TouchableOpacity

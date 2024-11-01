@@ -25,7 +25,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await fetch("http://192.168.1.3:3000/api/videos");
+        const response = await fetch("http://192.168.1.15:3000/api/videos");
         const data = await response.json();
         setVideos(data);
       } catch (error) {

@@ -102,7 +102,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         ) : visibleScreen === "TrackProgress" ? (
           <TrackProgress userId={userIdRef.current ?? ""} />
         ) : visibleScreen === "DailyChallenge" ? (
-          <DailyChallenge />
+          <DailyChallenge userId={userIdRef.current ?? ""} />
         ) : visibleScreen === "Profile" ? (
           <Profile />
         ) : visibleScreen === "Chat" ? ( // New Chat screen rendering

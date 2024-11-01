@@ -51,11 +51,59 @@ const videoSchema = new mongoose.Schema({
   videoId: String,
 });
 
+const quizProgressSchema = new mongoose.Schema({
+  userId: String,
+  questionId: String,
+  result: Boolean,
+});
+
 // Create models
-const quiz = mongoose.model("quiz", quizSchema);
+// const quiz = mongoose.model("quizzes", quizSchema);
 const Progress = mongoose.model("Progress", progressSchema);
 const Message = mongoose.model("Message", messageSchema);
 const Video = mongoose.model("Video", videoSchema);
+const QuizProgress = mongoose.model("QuizProgress", quizProgressSchema);
+
+// Save or update quiz progress API
+app.post("/api/saveQuizProgress", async (req, res) => {
+  const { userId, questionId, result } = req.body;
+  console.log("userId, questionId, result", userId, questionId, result);
+
+  try {
+    // Check if quiz progress for this question already exists for this user
+    let quizProgress = await QuizProgress.findOne({ userId, questionId });
+
+    if (quizProgress) {
+      // Update existing progress
+      quizProgress.result = result;
+      await quizProgress.save();
+      res.status(200).send({ message: "Quiz progress updated", quizProgress });
+    } else {
+      // Create new progress entry
+      quizProgress = new QuizProgress({
+        userId,
+        questionId,
+        result,
+      });
+      await quizProgress.save();
+      res.status(201).send({ message: "Quiz progress saved", quizProgress });
+    }
+  } catch (error) {
+    res.status(500).send("Error saving quiz progress.");
+  }
+});
+
+// Fetch quiz progress by userId API
+app.get("/api/getQuizProgress/:userId", async (req, res) => {
+  const { userId } = req.params;
+  console.log("/api/getQuizProgress/:userId", userId);
+  try {
+    const quizProgressData = await QuizProgress.find({ userId });
+    res.status(200).json(quizProgressData);
+  } catch (error) {
+    res.status(500).send("Error fetching quiz progress.");
+  }
+});
 
 // Fetch quiz data API
 app.get("/api/quiz", async (req: Request, res: Response) => {
