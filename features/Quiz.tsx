@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -18,6 +19,8 @@ interface QuizProps {
   videoId: string;
 }
 
+const host = Constants?.expoConfig?.hostUri.split(":").shift(); // Get the host dynamically
+
 const Quiz: React.FC<QuizProps> = ({ videoId }) => {
   const [quiz, setQuiz] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -28,9 +31,7 @@ const Quiz: React.FC<QuizProps> = ({ videoId }) => {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const response = await fetch(
-          `http://192.168.1.5:3000/api/quiz/${videoId}`
-        );
+        const response = await fetch(`http://${host}:3000/api/quiz/${videoId}`);
         const data = await response.json();
         setQuiz(data.questions);
       } catch (error) {

@@ -14,14 +14,16 @@ import {
 } from "react-native";
 import io, { Socket } from "socket.io-client";
 import axios from "axios";
+import Constants from "expo-constants";
 
 interface Message {
   _id: string;
   userId: string;
   text: string;
 }
+const host = Constants?.expoConfig?.hostUri.split(":").shift(); // Get the host dynamically
 
-const socket: Socket = io("http://192.168.1.5:3000");
+const socket: Socket = io(`http://${host}:3000`);
 
 interface Props {
   userId: string;
@@ -36,7 +38,7 @@ const Forum: React.FC<Props> = ({ userId }) => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get<Message[]>(
-          "http://192.168.1.5:3000/api/messages"
+          `http://${host}:3000/api/messages`
         );
         setMessages(response.data);
       } catch (error) {

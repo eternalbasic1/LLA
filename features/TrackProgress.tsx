@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, ScrollView } from "react-native";
 import { BarChart, PieChart } from "react-native-chart-kit";
+import Constants from "expo-constants"; // Import Constants
 
-const fetchUserProgress = async (actualUserId: string) => {
+const host = Constants?.expoConfig?.hostUri.split(":").shift(); // Get the host dynamically
+
+const fetchUserProgress = async (host: string, actualUserId: string) => {
   try {
     const response = await fetch(
-      `http://192.168.1.5:3000/api/progress/${actualUserId}`
+      `http://${host}:3000/api/progress/${actualUserId}` // Use the host variable
     );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -17,10 +20,10 @@ const fetchUserProgress = async (actualUserId: string) => {
   }
 };
 
-const fetchQuizProgress = async (userId: string) => {
+const fetchQuizProgress = async (host: string, userId: string) => {
   try {
     const response = await fetch(
-      `http://192.168.1.5:3000/api/getQuizProgress/${userId}`
+      `http://${host}:3000/api/getQuizProgress/${userId}` // Use the host variable
     );
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const quizProgressData = await response.json();
@@ -36,12 +39,12 @@ const UserProgressComponent: React.FC<{ userId: string }> = ({ userId }) => {
 
   useEffect(() => {
     const loadUserProgress = async () => {
-      const data = await fetchUserProgress(userId);
+      const data = await fetchUserProgress(host, userId);
       if (data) setProgressData(data);
     };
 
     const loadQuizProgress = async () => {
-      const quizData = await fetchQuizProgress(userId);
+      const quizData = await fetchQuizProgress(host, userId);
       if (quizData) setQuizProgressData(quizData);
     };
 

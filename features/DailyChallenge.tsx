@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -27,6 +28,8 @@ interface Quiz {
 interface DailyChallengeProps {
   userId: string;
 }
+const host = Constants?.expoConfig?.hostUri.split(":").shift(); // Get the host dynamically
+
 export default function DailyChallenge({ userId }: DailyChallengeProps) {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
@@ -36,7 +39,7 @@ export default function DailyChallenge({ userId }: DailyChallengeProps) {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://192.168.1.5:3000/api/quiz")
+    fetch(`http://${host}:3000/api/quiz`)
       .then((res) => res.json())
       .then((data) => setQuizzes(data));
   }, []);
@@ -52,7 +55,7 @@ export default function DailyChallenge({ userId }: DailyChallengeProps) {
 
       // Save quiz progress with questionId from MongoDB
       try {
-        await fetch("http://192.168.1.5:3000/api/saveQuizProgress", {
+        await fetch(`http://${host}:3000/api/saveQuizProgress`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

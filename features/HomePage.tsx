@@ -8,12 +8,15 @@ import {
   ActivityIndicator,
 } from "react-native";
 import YoutubePlayerView from "../components/home/YoutubePlayerView";
+import Constants from "expo-constants";
 
 interface Video {
   _id: string;
   title: string;
   videoId: string;
 }
+
+const host = Constants?.expoConfig?.hostUri.split(":").shift(); // Get the host dynamically
 
 const HomePage: React.FC = () => {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
@@ -25,7 +28,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await fetch("http://192.168.1.5:3000/api/videos");
+        const response = await fetch(`http://${host}:3000/api/videos`);
         const data = await response.json();
         setVideos(data);
       } catch (error) {

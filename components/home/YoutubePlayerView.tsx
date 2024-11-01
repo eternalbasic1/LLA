@@ -10,6 +10,9 @@ import {
 } from "react-native";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import Constants from "expo-constants";
+
+const host = Constants?.expoConfig?.hostUri.split(":").shift(); // Get the host dynamically
 
 const funFactsList = {
   english: [
@@ -129,24 +132,21 @@ const YoutubePlayerView: React.FC<YoutubePlayerViewProps> = ({
     actualUserId: string;
   }) => {
     try {
-      const response = await fetch(
-        "http://192.168.1.15:3000/api/saveProgress",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: actualUserId,
-            moduleId: "module123",
-            videoId,
-            videoName,
-            timeSpent: totalTimeSpent,
-            completed: true,
-            quizResults: [],
-          }),
-        }
-      );
+      const response = await fetch(`http://${host}:3000/api/saveProgress`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: actualUserId,
+          moduleId: "module123",
+          videoId,
+          videoName,
+          timeSpent: totalTimeSpent,
+          completed: true,
+          quizResults: [],
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
