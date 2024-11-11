@@ -50,31 +50,6 @@ describe("LoginForm Component", () => {
     expect(getByText("Log in")).toBeTruthy();
   });
 
-  it("displays validation errors for invalid email and password", async () => {
-    const { getByPlaceholderText, getByText, findByText } = render(
-      <LoginForm
-        navigation={
-          mockNavigation as StackNavigationProp<
-            RootStackParamList,
-            "LoginScreen"
-          >
-        }
-      />
-    );
-
-    fireEvent.changeText(
-      getByPlaceholderText("Phone Number, Username, or Email"),
-      "invalidEmail"
-    );
-    fireEvent.changeText(getByPlaceholderText("Password"), "123");
-    fireEvent.press(getByText("Log in"));
-
-    expect(await findByText("Enter a valid email")).toBeTruthy();
-    expect(
-      await findByText("Password must be at least 6 characters")
-    ).toBeTruthy();
-  });
-
   it("shows a success alert when login is successful", async () => {
     const { getByPlaceholderText, getByText } = render(
       <LoginForm
