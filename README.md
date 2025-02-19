@@ -27,7 +27,8 @@ Clone the Project & cd LLA
 ```bash
   cd LLA
   npm install
-  npm start
+  npm start -- Frontend code
+  npx ts-node connection.ts    -- backend code
 ```
 Download Expo go from Playstore/ App store & scan the QR
     
